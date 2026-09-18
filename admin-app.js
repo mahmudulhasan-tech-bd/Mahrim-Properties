@@ -16,7 +16,6 @@ let agentsList = [
 
 let currentTab = 'Dashboard';
 
-// Main Table Render Function
 function renderTable(type) {
     const tableHead = document.querySelector('#adminMainTable thead tr') || document.getElementById('tableHeadRow');
     const tableBody = document.querySelector('#adminMainTable tbody') || document.getElementById('tableBody');
@@ -80,7 +79,6 @@ function renderTable(type) {
         });
 
     } else {
-        // Dashboard, Properties, Hotels, Projects
         if (sectionTitle) sectionTitle.innerText = `${type} Review Queue`;
         tableHead.innerHTML = `
             <th>PROPERTY</th>
@@ -123,7 +121,6 @@ function renderTable(type) {
     }
 }
 
-// Action Menu Dropdown Handler
 function toggleActionDropdown(e) {
     e.stopPropagation();
     const dropdown = e.currentTarget.nextElementSibling;
@@ -135,12 +132,10 @@ function toggleActionDropdown(e) {
     if (dropdown) dropdown.classList.toggle('show');
 }
 
-// Close Dropdowns on outside click
 document.addEventListener('click', () => {
     document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
 });
 
-// Action Handlers
 function updatePropertyStatus(id, newStatus) {
     const item = propertiesList.find(p => p.id === id);
     if (item) {
@@ -180,7 +175,6 @@ function deleteAgent(id) {
     }
 }
 
-// Table Filter Functionality
 function filterAdminTable() {
     const searchVal = (
         document.getElementById('adminTableSearch')?.value || 
@@ -193,7 +187,6 @@ function filterAdminTable() {
     });
 }
 
-// Initialize Menu Click Events
 document.addEventListener('DOMContentLoaded', () => {
     const menuItems = document.querySelectorAll('.sidebar-menu a, .sidebar a');
 
