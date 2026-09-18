@@ -1,52 +1,118 @@
+// Firebase Configuration (Replace with your actual Firebase Credentials)
 const firebaseConfig = {
-    apiKey: "AIzaSyC9-OCF3L9yTL-yN9m9IpRBtkRK_T4u-Y8",
-    authDomain: "mahrim-properties.firebaseapp.com",
-    databaseURL: "https://mahrim-properties-default-rtdb.firebaseio.com",
-    projectId: "mahrim-properties",
-    storageBucket: "mahrim-properties.firebasestorage.app",
-    messagingSenderId: "1091253349290",
-    appId: "1:1091253349290:web:b4465b36a691c702f559d3",
-    measurementId: "G-E4RMTTT2XY"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
-
 const db = firebase.database();
 const auth = firebase.auth();
-let allProperties = [];
-let whatsappNumber = "+8801700000000";
 
-document.addEventListener("DOMContentLoaded", () => {
-    fetchProperties();
-    loadSiteSettings();
+// Fetch and Render Live Properties
+function loadProperties() {
+    const propertyGrid = document.getElementById('propertyList') || document.getElementById('adminPropertyList');
+    if (!propertyGrid) return;
 
-    // Listen to Login Status
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            document.getElementById('guestNav').style.display = 'none';
-            document.getElementById('userNav').style.display = 'flex';
-            document.getElementById('userNameDisplay').innerText = user.displayName || user.email.split('@')[0];
-            closeUserModal();
+    db.ref('properties').on('value', (snapshot) => {
+        propertyGrid.innerHTML = '';
+        const data = snapshot.val();
+        
+        if (!data) {
+            propertyGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #94a3b8; font-size: 1.1rem; padding: 40px;">No properties available right now.</p>`;
+            return;
+        }
+
+        Object.keys(data).forEach((key) => {
+            const item = data[key];
+            const isAdminPage = window.location.pathname.includes('admin.html');
+            
+            const cardHtml = `
+                <div class="property-card">
+                    <span class="tag">${item.category}</span>
+                    <img src="${item.image}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80'">
+                    <div class="card-details">
+                        <h3>${item.title}</h3>
+                        <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
+                        <div class="price">BDT ${Number(item.price).toLocaleString()}</div>
+                        ${isAdminPage ? 
+                            `<button onclick="deleteProperty('${key}')" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete Listing</button>` : 
+                            `<a href="https://wa.me/${item.whatsapp}?text=Hi,\%20I\%20am\%20interested\%20in\%20${encodeURIComponent(item.title)}" target="_blank" class="book-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>`
+                        }
+                    </div>
+                </div>
+            `;
+            propertyGrid.innerHTML += cardHtml;
+        });
+    });
+}
+
+// Admin Function: Add Property
+function handlePropertySubmit(e) {
+    e.preventDefault();
+    const title = document.getElementById('propTitle').value;
+    const category = document.getElementById('propCategory').value;
+    const location = document.getElementById('propLocation').value;
+    const price = document.getElementById('propPrice').value;
+    const image = document.getElementById('propImage').value;
+    const whatsapp = document.getElementById('propWhatsapp').value;
+
+    const newPropRef = db.ref('properties').push();
+    newPropRef.set({
+        title, category, location, price, image, whatsapp,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert("Property published successfully!");
+        document.getElementById('addPropertyForm').reset();
+    }).catch((err) => {
+        alert("Error adding property: " + err.message);
+    });
+}
+
+// Admin Function: Delete Property
+function deleteProperty(key) {
+    if (confirm("Are you sure you want to delete this listing?")) {
+        db.ref(`properties/${key}`).remove()
+            .then(() => alert("Property deleted successfully!"))
+            .catch((err) => alert("Error deleting: " + err.message));
+    }
+}
+
+// Global Filter System
+function filterProperties() {
+    const category = document.getElementById('filterCategory')?.value.toLowerCase();
+    const location = document.getElementById('filterLocation')?.value.toLowerCase();
+    const maxPrice = Number(document.getElementById('filterPrice')?.value);
+
+    const cards = document.querySelectorAll('.property-card');
+    cards.forEach(card => {
+        const cardCategory = card.querySelector('.tag')?.innerText.toLowerCase();
+        const cardLocation = card.querySelector('p')?.innerText.toLowerCase();
+        const cardPriceText = card.querySelector('.price')?.innerText.replace(/[^0-9]/g, '');
+        const cardPrice = Number(cardPriceText);
+
+        const matchCat = (category === 'all' || !category) || cardCategory.includes(category);
+        const matchLoc = !location || cardLocation.includes(location);
+        const matchPrice = !maxPrice || (cardPrice <= maxPrice);
+
+        if (matchCat && matchLoc && matchPrice) {
+            card.style.display = 'flex';
         } else {
-            document.getElementById('guestNav').style.display = 'block';
-            document.getElementById('userNav').style.display = 'none';
+            card.style.display = 'none';
         }
     });
-});
+}
 
-// Modal UI Controllers
+// Auth Modal Controls
 function openUserModal(type) {
     document.getElementById('userAuthModal').style.display = 'flex';
-    switchModal(type);
-}
-
-function closeUserModal() {
-    document.getElementById('userAuthModal').style.display = 'none';
-}
-
-function switchModal(type) {
     if (type === 'login') {
         document.getElementById('userLoginBox').style.display = 'block';
         document.getElementById('userSignupBox').style.display = 'none';
@@ -56,130 +122,15 @@ function switchModal(type) {
     }
 }
 
-// 1. Email/Password Sign Up
-function handleEmailSignup(e) {
-    e.preventDefault();
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const pass = document.getElementById('signupPass').value;
-
-    auth.createUserWithEmailAndPassword(email, pass)
-        .then((userCredential) => {
-            return userCredential.user.updateProfile({ displayName: name });
-        })
-        .then(() => {
-            alert('Account created successfully!');
-        })
-        .catch(err => alert('Sign Up Error: ' + err.message));
+function closeUserModal() {
+    document.getElementById('userAuthModal').style.display = 'none';
 }
 
-// 2. Email/Password Login
-function handleEmailLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const pass = document.getElementById('loginPass').value;
-
-    auth.signInWithEmailAndPassword(email, pass)
-        .then(() => alert('Logged in successfully!'))
-        .catch(err => alert('Login Error: ' + err.message));
+function switchModal(type) {
+    openUserModal(type);
 }
 
-// 3. Google Sign-In
-function handleGoogleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-        .then(() => alert('Google Sign-In successful!'))
-        .catch(err => alert('Google Auth Error: ' + err.message));
-}
-
-// 4. Facebook Sign-In
-function handleFacebookLogin() {
-    const provider = new firebase.auth.FacebookAuthProvider();
-    auth.signInWithPopup(provider)
-        .then(() => alert('Facebook Sign-In successful!'))
-        .catch(err => alert('Facebook Auth Error: ' + err.message));
-}
-
-function handleUserLogout() {
-    auth.signOut().then(() => alert('Logged Out!'));
-}
-
-// Fetch Properties
-function fetchProperties() {
-    db.ref('properties').on('value', (snapshot) => {
-        allProperties = [];
-        const data = snapshot.val();
-        for (let id in data) {
-            allProperties.push({ id, ...data[id] });
-        }
-        renderListings(allProperties);
-    });
-}
-
-function loadSiteSettings() {
-    db.ref('siteSettings').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.whatsapp) {
-            whatsappNumber = data.whatsapp.replace(/[^0-9]/g, '');
-        }
-    });
-}
-
-function renderListings(properties) {
-    const listContainer = document.getElementById('propertyList');
-    if (!listContainer) return;
-    listContainer.innerHTML = '';
-
-    if (properties.length === 0) {
-        listContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No Properties Available.</p>';
-        return;
-    }
-
-    properties.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'property-card';
-        card.innerHTML = `
-            <img src="${item.img}" alt="${item.title}">
-            <div class="card-details">
-                <span class="tag">${item.category}</span>
-                <h3>${item.title}</h3>
-                <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
-                <p><i class="fa-solid fa-bed"></i> ${item.bed || 'N/A'}</p>
-                <div class="price">BDT ${Number(item.price).toLocaleString()}</div>
-                <button class="book-btn" onclick="sendWhatsAppInquiry('${item.title}', '${item.price}', '${item.location}')">
-                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-                </button>
-            </div>
-        `;
-        listContainer.appendChild(card);
-    });
-}
-
-function sendWhatsAppInquiry(title, price, location) {
-    const currentUser = auth.currentUser;
-    const userName = currentUser ? (currentUser.displayName || currentUser.email) : "Guest User";
-
-    const text = `Hello Mahrim Properties! I am interested in this property:\n\n` +
-                 `📌 *Property:* ${title}\n` +
-                 `💰 *Price:* BDT ${price}\n` +
-                 `📍 *Location:* ${location}\n\n` +
-                 `👤 *Client Name:* ${userName}`;
-
-    const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodedText}`, '_blank');
-}
-
-function filterProperties() {
-    const category = document.getElementById('filterCategory').value;
-    const location = document.getElementById('filterLocation').value.toLowerCase();
-    const maxPrice = document.getElementById('filterPrice').value;
-
-    const filtered = allProperties.filter(item => {
-        const matchesCategory = (category === 'all' || item.category === category);
-        const matchesLocation = item.location.toLowerCase().includes(location);
-        const matchesPrice = (!maxPrice || Number(item.price) <= Number(maxPrice));
-        return matchesCategory && matchesLocation && matchesPrice;
-    });
-
-    renderListings(filtered);
-}
+// Auto Load Init
+document.addEventListener('DOMContentLoaded', () => {
+    loadProperties();
+});
