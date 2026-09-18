@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Firebase SDK Imports -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TASNIM PROPERTIES — Modern Real Estate UI/UX Platform</title>
@@ -30,18 +26,18 @@
         </a>
 
         <nav class="nav-menu">
-            <a href="#" class="active" onclick="filterByPurpose('FOR SALE', this)">Buy</a>
-            <a href="#" onclick="filterByPurpose('FOR RENT', this)">Rent</a>
-            <a href="#" onclick="alert('Sell page coming soon!')">Sell</a>
-            <a href="#" onclick="alert('Commercial properties coming soon!')">Commercial</a>
+            <a href="#" class="active" onclick="setSearchMode('buy', this)">Buy</a>
+            <a href="#" onclick="setSearchMode('rent', this)">Rent</a>
+            <a href="#" onclick="alert('Sell feature coming soon!')">Sell</a>
+            <a href="#" onclick="setSearchMode('commercial', this)">Commercial</a>
             <a href="#" onclick="alert('Hotels coming soon!')">Hotels</a>
             <a href="#" onclick="alert('Projects coming soon!')">Projects</a>
         </nav>
 
         <div class="nav-actions">
             <button class="btn-saved"><i class="fa-regular fa-heart"></i> Saved <span class="badge-count" id="savedCount">0</span></button>
-            <!-- Admin Panel Direct Link -->
-            <a href="admin.html" class="btn-primary" style="text-decoration: none; display: inline-block;">Admin Login</a>
+            <!-- Original User Auth Buttons Restored -->
+            <button class="btn-primary" onclick="openAuthModal('login')"><i class="fa-regular fa-user"></i> Login / Register</button>
         </div>
     </header>
 
@@ -87,23 +83,23 @@
         </div>
     </section>
 
-    <!-- Category UI -->
+    <!-- Categories Section -->
     <section class="categories-section">
         <div class="section-title-wrap">
             <h2>Explore Properties by Category</h2>
             <p>Browse listings suited to your specific requirement</p>
         </div>
         <div class="categories-grid">
-            <div class="cat-card" onclick="applyCategoryFilter('Apartment')"><i class="fa-solid fa-building"></i><h3>Apartment</h3></div>
-            <div class="cat-card" onclick="applyCategoryFilter('House')"><i class="fa-solid fa-house-chimney"></i><h3>House</h3></div>
-            <div class="cat-card" onclick="applyCategoryFilter('Land')"><i class="fa-solid fa-map-location-dot"></i><h3>Land / Plot</h3></div>
-            <div class="cat-card" onclick="applyCategoryFilter('Commercial')"><i class="fa-solid fa-briefcase"></i><h3>Commercial</h3></div>
-            <div class="cat-card" onclick="applyCategoryFilter('Hotels')"><i class="fa-solid fa-hotel"></i><h3>Hotels</h3></div>
-            <div class="cat-card" onclick="applyCategoryFilter('Projects')"><i class="fa-solid fa-diagram-project"></i><h3>New Projects</h3></div>
+            <div class="cat-card" onclick="filterByCategory('Apartment')"><i class="fa-solid fa-building"></i><h3>Apartment</h3></div>
+            <div class="cat-card" onclick="filterByCategory('House')"><i class="fa-solid fa-house-chimney"></i><h3>House</h3></div>
+            <div class="cat-card" onclick="filterByCategory('Land')"><i class="fa-solid fa-map-location-dot"></i><h3>Land / Plot</h3></div>
+            <div class="cat-card" onclick="filterByCategory('Commercial')"><i class="fa-solid fa-briefcase"></i><h3>Commercial</h3></div>
+            <div class="cat-card" onclick="filterByCategory('Hotels')"><i class="fa-solid fa-hotel"></i><h3>Hotels</h3></div>
+            <div class="cat-card" onclick="filterByCategory('Projects')"><i class="fa-solid fa-diagram-project"></i><h3>New Projects</h3></div>
         </div>
     </section>
 
-    <!-- Property Listing Section -->
+    <!-- Property Listings Container -->
     <main class="main-container">
         <div class="listings-header">
             <div>
@@ -115,7 +111,7 @@
 
         <div class="split-view-container">
             <div class="property-grid" id="propertyGrid">
-                <!-- Javascript dynamic cards -->
+                <!-- Javascript Dynamic Cards -->
             </div>
 
             <aside class="sticky-side-panel">
@@ -128,6 +124,32 @@
         </div>
     </main>
 
+    <!-- User Authentication Modal (Popup Dialog) -->
+    <div class="filter-drawer-overlay" id="userAuthModal">
+        <div class="filter-drawer" style="max-width: 420px; height: auto; margin: auto; border-radius: var(--radius-md);">
+            <div class="drawer-header">
+                <h3 id="authModalTitle">User Login</h3>
+                <button onclick="closeAuthModal()" class="btn-close">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <div class="filter-group">
+                    <label>Email Address</label>
+                    <input type="email" id="authEmail" placeholder="yourname@example.com" style="width:100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                </div>
+                <div class="filter-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" style="width:100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                </div>
+            </div>
+            <div class="drawer-footer" style="flex-direction: column; gap: 10px;">
+                <button class="btn-primary" style="width: 100%;" onclick="handleUserAuth()">Submit</button>
+                <div style="text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
+                    Admin Panel-e jete chan? <a href="admin.html" style="color: var(--secondary); font-weight: 700; text-decoration: none;">Admin Access Here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter Drawer UX -->
     <div class="filter-drawer-overlay" id="filterDrawer">
         <div class="filter-drawer">
@@ -139,23 +161,14 @@
                 <div class="filter-group">
                     <label>Price Range (BDT)</label>
                     <div class="range-inputs">
-                        <input type="number" id="drawerMinPrice" placeholder="Min Price">
-                        <input type="number" id="drawerMaxPrice" placeholder="Max Price">
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <label>Bedrooms</label>
-                    <div class="pill-selectors">
-                        <button class="pill active" onclick="selectPill(this)">Any</button>
-                        <button class="pill" onclick="selectPill(this)">1</button>
-                        <button class="pill" onclick="selectPill(this)">2</button>
-                        <button class="pill" onclick="selectPill(this)">3+</button>
+                        <input type="number" placeholder="Min Price">
+                        <input type="number" placeholder="Max Price">
                     </div>
                 </div>
             </div>
             <div class="drawer-footer">
-                <button class="btn-outline" onclick="resetFilters()">Reset</button>
-                <button class="btn-primary" onclick="applyDrawerFilters()">Apply Filters</button>
+                <button class="btn-outline" onclick="toggleFilterDrawer()">Reset</button>
+                <button class="btn-primary" onclick="toggleFilterDrawer()">Apply Filters</button>
             </div>
         </div>
     </div>
@@ -165,7 +178,7 @@
         <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
         <a href="#" onclick="window.scrollTo({top: 300, behavior: 'smooth'})"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
         <a href="#"><i class="fa-regular fa-heart"></i><span>Saved</span></a>
-        <a href="admin.html"><i class="fa-solid fa-user-gear"></i><span>Admin</span></a>
+        <a href="#" onclick="openAuthModal('login')"><i class="fa-regular fa-user"></i><span>Account</span></a>
     </div>
 
     <footer class="main-footer">
@@ -190,11 +203,10 @@
                 </ul>
             </div>
             <div>
-                <h4>Trust & Legal</h4>
+                <h4>Access</h4>
                 <ul>
-                    <li><a href="#">Verification Guarantee</a></li>
-                    <li><a href="#">Terms & Conditions</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#" onclick="openAuthModal('login')">User Login</a></li>
+                    <li><a href="admin.html">Admin Portal</a></li>
                 </ul>
             </div>
         </div>
