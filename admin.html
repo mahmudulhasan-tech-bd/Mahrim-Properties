@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Mahrim Properties</title>
+    <!-- CSS Link: Keep exactly 'style.css' -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Top Admin Header -->
     <header class="main-header">
         <div class="logo">
             <i class="fa-solid fa-building-circle-check"></i>
-            <span>Mahrim Properties <small style="font-size: 0.8rem; color: #6366f1;">[Admin Control]</small></span>
+            <span>Mahrim Properties <small style="font-size: 0.8rem; color: #6366f1;">[Admin Panel]</small></span>
         </div>
         <a href="index.html" class="btn-glow-secondary"><i class="fa-solid fa-eye"></i> View Live Site</a>
     </header>
 
     <main class="main-container">
-        <!-- Admin Form Card -->
         <div class="admin-card">
             <div class="section-header">
                 <h2>Add New Property Listing</h2>
@@ -31,7 +30,7 @@
                 <div class="admin-form-grid">
                     <div class="field-group">
                         <i class="fa-solid fa-heading"></i>
-                        <input type="text" id="propTitle" placeholder="Property Title (e.g. Luxury Penthouse)" required>
+                        <input type="text" id="propTitle" placeholder="Property Title" required>
                     </div>
 
                     <div class="field-group">
@@ -46,7 +45,7 @@
 
                     <div class="field-group">
                         <i class="fa-solid fa-location-dot"></i>
-                        <input type="text" id="propLocation" placeholder="Location (e.g. Uttara, Dhaka)" required>
+                        <input type="text" id="propLocation" placeholder="Location" required>
                     </div>
 
                     <div class="field-group">
@@ -56,12 +55,12 @@
 
                     <div class="field-group">
                         <i class="fa-solid fa-image"></i>
-                        <input type="url" id="propImage" placeholder="Image Direct URL (e.g. Unsplash/ImgBB)" required>
+                        <input type="url" id="propImage" placeholder="Image URL" required>
                     </div>
 
                     <div class="field-group">
                         <i class="fa-brands fa-whatsapp"></i>
-                        <input type="text" id="propWhatsapp" placeholder="WhatsApp Number (e.g. 8801700000000)" required>
+                        <input type="text" id="propWhatsapp" placeholder="WhatsApp Number" required>
                     </div>
                 </div>
 
@@ -71,18 +70,14 @@
             </form>
         </div>
 
-        <!-- Property List Management -->
         <div class="section-header" style="margin-top: 50px;">
             <h2>Manage Live Listings</h2>
             <div class="glow-line"></div>
         </div>
 
-        <div class="property-grid" id="adminPropertyList">
-            <!-- Dynamic Items Added From Firebase -->
-        </div>
+        <div class="property-grid" id="adminPropertyList"></div>
     </main>
 
-    <!-- Firebase System Script Links -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
