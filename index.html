@@ -3,87 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrimeHaven | Premium Flat Rent, Sell & Hotel Booking</title>
+    <title>Mahrim Properties | Premium Real Estate & Booking</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <!-- Header Navigation -->
-    <header>
+    <header class="header">
         <nav class="navbar">
-            <div class="logo">
-                <i class="fa-solid fa-building-user"></i> Prime<span>Haven</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#listings">Listings</a></li>
-                <li><a href="#features">Services</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="admin.html" class="admin-btn"><i class="fa-solid fa-user-gear"></i> Admin Panel</a></li>
+            <a href="#" class="logo">
+                <i class="fa-solid fa-building-circle-check"></i> MAHRIM <span>PROPERTIES</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#listings" class="nav-link">Properties</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section id="home" class="hero-section">
+        <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>Khujun Apnar Shopner Flat Ba Hotel Room</h1>
-            <p>Flat Rent, Flat Sell ebong Hotel Booking - Sob Ek Jaygay</p>
-
-            <!-- Search & Filter Bar -->
-            <div class="search-box">
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-list-check"></i> Category</label>
+            <h1>Find Your Dream Space With Confidence</h1>
+            <p>Explore luxury apartments, commercial spaces & premium hotel bookings in top locations.</p>
+            
+            <div class="search-filter-card">
+                <div class="filter-item">
+                    <label><i class="fa-solid fa-list"></i> Type</label>
                     <select id="filterCategory">
                         <option value="all">All Categories</option>
-                        <option value="rent">Flat Rent</option>
-                        <option value="sell">Flat Sell</option>
+                        <option value="rent">Flat For Rent</option>
+                        <option value="sell">Flat For Sell</option>
                         <option value="hotel">Hotel Room</option>
                     </select>
                 </div>
-                <div class="filter-group">
+                <div class="filter-item">
                     <label><i class="fa-solid fa-location-dot"></i> Location</label>
-                    <input type="text" id="filterLocation" placeholder="e.g. Gulshan, Dhaka">
+                    <input type="text" id="filterLocation" placeholder="e.g. Gulshan, Banani">
                 </div>
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-bangladeshi-taka-sign"></i> Max Price</label>
-                    <input type="number" id="filterPrice" placeholder="Max Budget">
+                <div class="filter-item">
+                    <label><i class="fa-solid fa-bangladeshi-taka-sign"></i> Max Budget</label>
+                    <input type="number" id="filterPrice" placeholder="Max Price in BDT">
                 </div>
-                <button onclick="filterProperties()" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                <button onclick="filterProperties()" class="btn-search">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- Listings Section -->
-    <section id="listings" class="container">
-        <h2 class="section-title">Featured Properties & Hotels</h2>
-        <div id="propertyList" class="grid-container">
-            <!-- Dynamic items loaded via JavaScript -->
+    <section id="listings" class="main-container">
+        <div class="section-header">
+            <h2>Featured Properties</h2>
+            <p>Discover our handpicked selections for your luxury lifestyle</p>
         </div>
+        <div id="propertyList" class="properties-grid"></div>
     </section>
 
-    <!-- Contact & Booking Modal -->
+    <!-- Booking Modal -->
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Inquire / Book Property</h3>
+            <h3 id="modalTitle">Inquire Property</h3>
             <form id="bookingForm" onsubmit="handleBooking(event)">
-                <input type="text" id="custName" placeholder="Apnar Naam" required>
-                <input type="tel" id="custPhone" placeholder="Mobile Number" required>
-                <textarea id="custMsg" placeholder="Apnar Message ba Requirement..." rows="4"></textarea>
-                <button type="submit" class="submit-btn"><i class="fa-solid fa-paper-plane"></i> Send Request</button>
+                <input type="text" placeholder="Your Name" required>
+                <input type="tel" placeholder="Phone Number" required>
+                <textarea placeholder="Your Message or Booking Dates" rows="3"></textarea>
+                <button type="submit" class="btn-submit">Submit Inquiry</button>
             </form>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2026 PrimeHaven Platform. All Rights Reserved.</p>
+    <footer class="footer">
+        <p>&copy; 2026 Mahrim Properties. All rights reserved.</p>
     </footer>
 
-    <!-- Firebase SDK & Custom Script -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="app.js"></script>
