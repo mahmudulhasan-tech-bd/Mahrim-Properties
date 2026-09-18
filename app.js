@@ -1,3 +1,20 @@
+// Initialize Firebase
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Firestore theke Live Data Fetch
+    db.collection("properties").get().then((querySnapshot) => {
+        let liveData = [];
+        querySnapshot.forEach((doc) => {
+            liveData.push({ id: doc.id, ...doc.data() });
+        });
+        if (liveData.length > 0) {
+            propertiesData = liveData;
+            renderProperties(propertiesData);
+        }
+    }).catch(err => console.log("Firebase Load Fallback: Using local array", err));
+}
 // Firebase Config Structure (Apnar Firebase Console theke credentials boshate hobe)
 const firebaseConfig = {
     apiKey: "YOUR_FIREBASE_API_KEY",
