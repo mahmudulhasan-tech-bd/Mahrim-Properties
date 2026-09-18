@@ -3,20 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TASNIM PROPERTIES — Modern Real Estate UI/UX Platform</title>
-    <link rel="stylesheet" href="style.css">
+    <title>TASNIM PROPERTIES — Modern Real Estate Solutions</title>
+    
+    <!-- External Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap">
+
+    <style>
+        :root {
+            --primary: #0F172A;
+            --secondary: #C8A45D;
+            --bg-light: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-primary: #111827;
+            --text-secondary: #64748B;
+            --border-color: #E2E8F0;
+            --radius-md: 12px;
+            --font-heading: 'Manrope', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+        }
+
+        /* Navbar Header */
+        .navbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            color: var(--secondary);
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .brand-name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+            display: block;
+            line-height: 1;
+        }
+
+        .brand-sub {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--secondary);
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80') center/cover;
+            padding: 100px 5% 120px 5%;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            margin-bottom: 36px;
+        }
+
+        .search-box {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .search-box input, .search-box select {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        /* Main Properties Container */
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            margin-bottom: 32px;
+        }
+
+        .section-title h2 {
+            font-size: 1.8rem;
+            font-family: var(--font-heading);
+            color: var(--primary);
+        }
+
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+        }
+
+        .prop-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .prop-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+        }
+
+        .prop-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .prop-info {
+            padding: 20px;
+        }
+
+        .prop-price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 6px;
+        }
+
+        .prop-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .prop-loc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .prop-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: #94a3b8;
+            padding: 40px 5% 20px 5%;
+            margin-top: 80px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Top Announcement Bar -->
-    <div class="announcement-bar">
-        <span><i class="fa-solid fa-gem"></i> Premium Property Valuation & Listing Services in Bangladesh</span>
-    </div>
-
-    <!-- Sticky Navbar UI -->
-    <header class="main-header">
+    <!-- Header Navbar -->
+    <nav class="navbar">
         <a href="index.html" class="logo">
             <div class="logo-icon">T</div>
             <div class="logo-text">
@@ -24,197 +272,105 @@
                 <span class="brand-sub">PROPERTIES</span>
             </div>
         </a>
-
-        <nav class="nav-menu">
-            <a href="#" class="active" onclick="setSearchMode('buy', this)">Buy</a>
-            <a href="#" onclick="setSearchMode('rent', this)">Rent</a>
-            <a href="#" onclick="alert('Sell feature coming soon!')">Sell</a>
-            <a href="#" onclick="setSearchMode('commercial', this)">Commercial</a>
-            <a href="#" onclick="alert('Hotels coming soon!')">Hotels</a>
-            <a href="#" onclick="alert('Projects coming soon!')">Projects</a>
-        </nav>
-
-        <div class="nav-actions">
-            <button class="btn-saved"><i class="fa-regular fa-heart"></i> Saved <span class="badge-count" id="savedCount">0</span></button>
-            <!-- Original User Auth Buttons Restored -->
-            <button class="btn-primary" onclick="openAuthModal('login')"><i class="fa-regular fa-user"></i> Login / Register</button>
+        <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#">Properties</a></li>
+            <li><a href="#">Hotels</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Agents</a></li>
+        </ul>
+        <div class="nav-btns">
+            <a href="admin.html" class="btn btn-outline">Admin Login</a>
+            <a href="#" class="btn btn-primary">Add Listing</a>
         </div>
-    </header>
+    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1>Find a Place You'll Love</h1>
-            <p>Discover verified homes, apartments, land, and luxury commercial properties.</p>
-            
-            <div class="hero-search-card">
-                <div class="search-tabs">
-                    <button class="tab-btn active" onclick="setSearchMode('buy', this)">Buy</button>
-                    <button class="tab-btn" onclick="setSearchMode('rent', this)">Rent</button>
-                    <button class="tab-btn" onclick="setSearchMode('commercial', this)">Commercial</button>
-                    <button class="tab-btn" onclick="setSearchMode('hotels', this)">Hotels</button>
-                </div>
-
-                <div class="search-form-grid">
-                    <div class="search-field">
-                        <label><i class="fa-solid fa-location-dot"></i> Location</label>
-                        <input type="text" id="searchLocation" placeholder="Uttara, Gulshan, Banani...">
-                    </div>
-                    <div class="search-field">
-                        <label><i class="fa-solid fa-house"></i> Property Type</label>
-                        <select id="searchType">
-                            <option value="all">All Types</option>
-                            <option value="apartment">Apartment</option>
-                            <option value="house">House / Villa</option>
-                            <option value="land">Plot / Land</option>
-                            <option value="commercial">Commercial</option>
-                        </select>
-                    </div>
-                    <div class="search-field">
-                        <label><i class="fa-solid fa-bangladeshi-taka-sign"></i> Max Budget</label>
-                        <input type="number" id="searchPrice" placeholder="e.g. 15000000">
-                    </div>
-                    <button class="btn-hero-search" onclick="applySearchFilter()">
-                        <i class="fa-solid fa-magnifying-glass"></i> SEARCH
-                    </button>
-                </div>
-            </div>
+    <!-- Hero Banner -->
+    <section class="hero">
+        <h1>Find Your Dream Property in Bangladesh</h1>
+        <p>Explore exclusive apartments, land plots, duplexes, and commercial spaces</p>
+        
+        <div class="search-box">
+            <input type="text" id="userSearch" placeholder="Enter location, area or project name..." onkeyup="filterUserListings()">
+            <select id="typeFilter" onchange="filterUserListings()">
+                <option value="all">All Property Types</option>
+                <option value="apartment">Apartments</option>
+                <option value="duplex">Duplex</option>
+                <option value="commercial">Commercial</option>
+            </select>
+            <button class="btn btn-primary" onclick="filterUserListings()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
         </div>
     </section>
 
-    <!-- Categories Section -->
-    <section class="categories-section">
-        <div class="section-title-wrap">
-            <h2>Explore Properties by Category</h2>
-            <p>Browse listings suited to your specific requirement</p>
-        </div>
-        <div class="categories-grid">
-            <div class="cat-card" onclick="filterByCategory('Apartment')"><i class="fa-solid fa-building"></i><h3>Apartment</h3></div>
-            <div class="cat-card" onclick="filterByCategory('House')"><i class="fa-solid fa-house-chimney"></i><h3>House</h3></div>
-            <div class="cat-card" onclick="filterByCategory('Land')"><i class="fa-solid fa-map-location-dot"></i><h3>Land / Plot</h3></div>
-            <div class="cat-card" onclick="filterByCategory('Commercial')"><i class="fa-solid fa-briefcase"></i><h3>Commercial</h3></div>
-            <div class="cat-card" onclick="filterByCategory('Hotels')"><i class="fa-solid fa-hotel"></i><h3>Hotels</h3></div>
-            <div class="cat-card" onclick="filterByCategory('Projects')"><i class="fa-solid fa-diagram-project"></i><h3>New Projects</h3></div>
-        </div>
-    </section>
-
-    <!-- Property Listings Container -->
-    <main class="main-container">
-        <div class="listings-header">
-            <div>
-                <h2>Featured Properties</h2>
-                <p>Showing curated listings with verified ownership</p>
-            </div>
-            <button class="btn-filter-drawer" onclick="toggleFilterDrawer()"><i class="fa-solid fa-sliders"></i> More Filters</button>
+    <!-- Property Showcase -->
+    <main class="container">
+        <div class="section-title">
+            <h2>Featured Properties</h2>
+            <p style="color: var(--text-secondary);">Verified real estate listings available for sale and rent</p>
         </div>
 
-        <div class="split-view-container">
-            <div class="property-grid" id="propertyGrid">
-                <!-- Javascript Dynamic Cards -->
-            </div>
-
-            <aside class="sticky-side-panel">
-                <div class="map-placeholder">
-                    <i class="fa-solid fa-map-location-dot map-icon"></i>
-                    <h3>Interactive Map View</h3>
-                    <p>Click on any property card to view precise geographical coordinates and nearby points of interest.</p>
-                </div>
-            </aside>
+        <div class="property-grid" id="publicPropGrid">
+            <!-- Dynamic Properties via JS -->
         </div>
     </main>
 
-    <!-- User Authentication Modal (Popup Dialog) -->
-    <div class="filter-drawer-overlay" id="userAuthModal">
-        <div class="filter-drawer" style="max-width: 420px; height: auto; margin: auto; border-radius: var(--radius-md);">
-            <div class="drawer-header">
-                <h3 id="authModalTitle">User Login</h3>
-                <button onclick="closeAuthModal()" class="btn-close">&times;</button>
-            </div>
-            <div class="drawer-body">
-                <div class="filter-group">
-                    <label>Email Address</label>
-                    <input type="email" id="authEmail" placeholder="yourname@example.com" style="width:100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
-                </div>
-                <div class="filter-group">
-                    <label>Password</label>
-                    <input type="password" id="authPassword" placeholder="••••••••" style="width:100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
-                </div>
-            </div>
-            <div class="drawer-footer" style="flex-direction: column; gap: 10px;">
-                <button class="btn-primary" style="width: 100%;" onclick="handleUserAuth()">Submit</button>
-                <div style="text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
-                    Admin Panel-e jete chan? <a href="admin.html" style="color: var(--secondary); font-weight: 700; text-decoration: none;">Admin Access Here</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Drawer UX -->
-    <div class="filter-drawer-overlay" id="filterDrawer">
-        <div class="filter-drawer">
-            <div class="drawer-header">
-                <h3>Filters</h3>
-                <button onclick="toggleFilterDrawer()" class="btn-close">&times;</button>
-            </div>
-            <div class="drawer-body">
-                <div class="filter-group">
-                    <label>Price Range (BDT)</label>
-                    <div class="range-inputs">
-                        <input type="number" placeholder="Min Price">
-                        <input type="number" placeholder="Max Price">
-                    </div>
-                </div>
-            </div>
-            <div class="drawer-footer">
-                <button class="btn-outline" onclick="toggleFilterDrawer()">Reset</button>
-                <button class="btn-primary" onclick="toggleFilterDrawer()">Apply Filters</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-        <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
-        <a href="#" onclick="window.scrollTo({top: 300, behavior: 'smooth'})"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
-        <a href="#"><i class="fa-regular fa-heart"></i><span>Saved</span></a>
-        <a href="#" onclick="openAuthModal('login')"><i class="fa-regular fa-user"></i><span>Account</span></a>
-    </div>
-
-    <footer class="main-footer">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <div class="logo light-logo">
-                    <div class="logo-icon">T</div>
-                    <div class="logo-text">
-                        <span class="brand-name">TASNIM</span>
-                        <span class="brand-sub">PROPERTIES</span>
-                    </div>
-                </div>
-                <p>Your trusted premium platform for buying, selling, and renting luxury properties in Bangladesh.</p>
-            </div>
-            <div>
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="#">Buy Apartment</a></li>
-                    <li><a href="#">Rent Flat</a></li>
-                    <li><a href="#">Commercial Plot</a></li>
-                    <li><a href="#">Hotel Bookings</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Access</h4>
-                <ul>
-                    <li><a href="#" onclick="openAuthModal('login')">User Login</a></li>
-                    <li><a href="admin.html">Admin Portal</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2026 TASNIM PROPERTIES. All Rights Reserved.</p>
-        </div>
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 TASNIM PROPERTIES. All rights reserved.</p>
     </footer>
 
-    <script src="app.js"></script>
+    <!-- App Logic -->
+    <script>
+        const featuredProperties = [
+            { id: 1, title: "Luxury 3 Bedroom Apartment", location: "Uttara Sector 10, Dhaka", price: "1,25,00,000", beds: 3, baths: 3, size: "1850 sqft", type: "apartment", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" },
+            { id: 2, title: "Modern Duplex Penthouse", location: "Gulshan 2, Dhaka", price: "3,80,00,000", beds: 4, baths: 5, size: "3200 sqft", type: "duplex", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" },
+            { id: 3, title: "Commercial Office Space", location: "Banani C/A, Dhaka", price: "2,50,00,000", beds: 0, baths: 2, size: "2100 sqft", type: "commercial", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        function renderUserListings(items) {
+            const grid = document.getElementById('publicPropGrid');
+            grid.innerHTML = '';
+
+            if(items.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">No properties found matching your criteria.</p>`;
+                return;
+            }
+
+            items.forEach(p => {
+                grid.innerHTML += `
+                    <div class="prop-card">
+                        <img src="${p.image}" class="prop-img" alt="${p.title}">
+                        <div class="prop-info">
+                            <div class="prop-price">৳ ${p.price}</div>
+                            <h3 class="prop-title">${p.title}</h3>
+                            <div class="prop-loc"><i class="fa-solid fa-location-dot"></i> ${p.location}</div>
+                            <div class="prop-footer">
+                                <span><i class="fa-solid fa-bed"></i> ${p.beds} Beds</span>
+                                <span><i class="fa-solid fa-bath"></i> ${p.baths} Baths</span>
+                                <span><i class="fa-solid fa-ruler-combined"></i> ${p.size}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterUserListings() {
+            const searchVal = document.getElementById('userSearch').value.toLowerCase();
+            const typeVal = document.getElementById('typeFilter').value;
+
+            const filtered = featuredProperties.filter(p => {
+                const matchesSearch = p.title.toLowerCase().includes(searchVal) || p.location.toLowerCase().includes(searchVal);
+                const matchesType = (typeVal === 'all') || (p.type === typeVal);
+                return matchesSearch && matchesType;
+            });
+
+            renderUserListings(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUserListings(featuredProperties);
+        });
+    </script>
 </body>
 </html>
