@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TASNIM PROPERTIES — Modern Real Estate UI/UX Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar">
+        <span><i class="fa-solid fa-gem"></i> Premium Property Valuation & Listing Services in Bangladesh</span>
+    </div>
+
+    <!-- Sticky Navbar UI -->
+    <header class="main-header">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">T</div>
+            <div class="logo-text">
+                <span class="brand-name">TASNIM</span>
+                <span class="brand-sub">PROPERTIES</span>
+            </div>
+        </a>
+
+        <nav class="nav-menu">
+            <a href="#" class="active" onclick="filterByPurpose('FOR SALE', this)">Buy</a>
+            <a href="#" onclick="filterByPurpose('FOR RENT', this)">Rent</a>
+            <a href="#" onclick="alert('Sell page coming soon!')">Sell</a>
+            <a href="#" onclick="alert('Commercial properties coming soon!')">Commercial</a>
+            <a href="#" onclick="alert('Hotels coming soon!')">Hotels</a>
+            <a href="#" onclick="alert('Projects coming soon!')">Projects</a>
+        </nav>
+
+        <div class="nav-actions">
+            <button class="btn-saved"><i class="fa-regular fa-heart"></i> Saved <span class="badge-count" id="savedCount">0</span></button>
+            <!-- Admin Panel Direct Link -->
+            <a href="admin.html" class="btn-primary" style="text-decoration: none; display: inline-block;">Admin Login</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Find a Place You'll Love</h1>
+            <p>Discover verified homes, apartments, land, and luxury commercial properties.</p>
+            
+            <div class="hero-search-card">
+                <div class="search-tabs">
+                    <button class="tab-btn active" onclick="setSearchMode('buy', this)">Buy</button>
+                    <button class="tab-btn" onclick="setSearchMode('rent', this)">Rent</button>
+                    <button class="tab-btn" onclick="setSearchMode('commercial', this)">Commercial</button>
+                    <button class="tab-btn" onclick="setSearchMode('hotels', this)">Hotels</button>
+                </div>
+
+                <div class="search-form-grid">
+                    <div class="search-field">
+                        <label><i class="fa-solid fa-location-dot"></i> Location</label>
+                        <input type="text" id="searchLocation" placeholder="Uttara, Gulshan, Banani...">
+                    </div>
+                    <div class="search-field">
+                        <label><i class="fa-solid fa-house"></i> Property Type</label>
+                        <select id="searchType">
+                            <option value="all">All Types</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="house">House / Villa</option>
+                            <option value="land">Plot / Land</option>
+                            <option value="commercial">Commercial</option>
+                        </select>
+                    </div>
+                    <div class="search-field">
+                        <label><i class="fa-solid fa-bangladeshi-taka-sign"></i> Max Budget</label>
+                        <input type="number" id="searchPrice" placeholder="e.g. 15000000">
+                    </div>
+                    <button class="btn-hero-search" onclick="applySearchFilter()">
+                        <i class="fa-solid fa-magnifying-glass"></i> SEARCH
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category UI -->
+    <section class="categories-section">
+        <div class="section-title-wrap">
+            <h2>Explore Properties by Category</h2>
+            <p>Browse listings suited to your specific requirement</p>
+        </div>
+        <div class="categories-grid">
+            <div class="cat-card" onclick="applyCategoryFilter('Apartment')"><i class="fa-solid fa-building"></i><h3>Apartment</h3></div>
+            <div class="cat-card" onclick="applyCategoryFilter('House')"><i class="fa-solid fa-house-chimney"></i><h3>House</h3></div>
+            <div class="cat-card" onclick="applyCategoryFilter('Land')"><i class="fa-solid fa-map-location-dot"></i><h3>Land / Plot</h3></div>
+            <div class="cat-card" onclick="applyCategoryFilter('Commercial')"><i class="fa-solid fa-briefcase"></i><h3>Commercial</h3></div>
+            <div class="cat-card" onclick="applyCategoryFilter('Hotels')"><i class="fa-solid fa-hotel"></i><h3>Hotels</h3></div>
+            <div class="cat-card" onclick="applyCategoryFilter('Projects')"><i class="fa-solid fa-diagram-project"></i><h3>New Projects</h3></div>
+        </div>
+    </section>
+
+    <!-- Property Listing Section -->
+    <main class="main-container">
+        <div class="listings-header">
+            <div>
+                <h2>Featured Properties</h2>
+                <p>Showing curated listings with verified ownership</p>
+            </div>
+            <button class="btn-filter-drawer" onclick="toggleFilterDrawer()"><i class="fa-solid fa-sliders"></i> More Filters</button>
+        </div>
+
+        <div class="split-view-container">
+            <div class="property-grid" id="propertyGrid">
+                <!-- Javascript dynamic cards -->
+            </div>
+
+            <aside class="sticky-side-panel">
+                <div class="map-placeholder">
+                    <i class="fa-solid fa-map-location-dot map-icon"></i>
+                    <h3>Interactive Map View</h3>
+                    <p>Click on any property card to view precise geographical coordinates and nearby points of interest.</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Filter Drawer UX -->
+    <div class="filter-drawer-overlay" id="filterDrawer">
+        <div class="filter-drawer">
+            <div class="drawer-header">
+                <h3>Filters</h3>
+                <button onclick="toggleFilterDrawer()" class="btn-close">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <div class="filter-group">
+                    <label>Price Range (BDT)</label>
+                    <div class="range-inputs">
+                        <input type="number" id="drawerMinPrice" placeholder="Min Price">
+                        <input type="number" id="drawerMaxPrice" placeholder="Max Price">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Bedrooms</label>
+                    <div class="pill-selectors">
+                        <button class="pill active" onclick="selectPill(this)">Any</button>
+                        <button class="pill" onclick="selectPill(this)">1</button>
+                        <button class="pill" onclick="selectPill(this)">2</button>
+                        <button class="pill" onclick="selectPill(this)">3+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="drawer-footer">
+                <button class="btn-outline" onclick="resetFilters()">Reset</button>
+                <button class="btn-primary" onclick="applyDrawerFilters()">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+        <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="#" onclick="window.scrollTo({top: 300, behavior: 'smooth'})"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></a>
+        <a href="#"><i class="fa-regular fa-heart"></i><span>Saved</span></a>
+        <a href="admin.html"><i class="fa-solid fa-user-gear"></i><span>Admin</span></a>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="logo light-logo">
+                    <div class="logo-icon">T</div>
+                    <div class="logo-text">
+                        <span class="brand-name">TASNIM</span>
+                        <span class="brand-sub">PROPERTIES</span>
+                    </div>
+                </div>
+                <p>Your trusted premium platform for buying, selling, and renting luxury properties in Bangladesh.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Buy Apartment</a></li>
+                    <li><a href="#">Rent Flat</a></li>
+                    <li><a href="#">Commercial Plot</a></li>
+                    <li><a href="#">Hotel Bookings</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Trust & Legal</h4>
+                <ul>
+                    <li><a href="#">Verification Guarantee</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 TASNIM PROPERTIES. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
