@@ -1,233 +1,204 @@
-// Firebase Config & Firestore Initialization
-const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "tasnim-properties.firebaseapp.com",
-    projectId: "tasnim-properties",
-    storageBucket: "tasnim-properties.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = (typeof firebase !== 'undefined') ? firebase.firestore() : null;
-
-// Mock Fallback Data (Database connect na thakle eita dekhabe)
-let adminPropertiesData = [
+// Data Stores
+let propertiesList = [
     { id: "TP-101", title: "Luxury 3 Bedroom Apartment", location: "Uttara Sector 10, Dhaka", owner: "Agent Mahmud", price: 12500000, status: "Approved", category: "Properties", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=100&q=80" },
     { id: "TP-102", title: "Modern Duplex Penthouse", location: "Gulshan 2, Dhaka", owner: "Kazi Rahman", price: 38000000, status: "Pending", category: "Properties", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=100&q=80" }
 ];
 
-let adminUsersData = [
+let usersList = [
     { id: "USR-01", name: "Tanvir Ahmed", email: "tanvir@gmail.com", role: "User", status: "Active" },
     { id: "USR-02", name: "Rahim Chowdhury", email: "rahim@gmail.com", role: "User", status: "Active" }
 ];
 
-let adminAgentsData = [
+let agentsList = [
     { id: "AGT-01", name: "Agent Mahmud", email: "mahmud@tasnim.com", role: "Agent", status: "Approved" },
     { id: "AGT-02", name: "Kazi Rahman", email: "kazi@tasnim.com", role: "Agent", status: "Pending" }
 ];
 
-let currentActiveView = 'Dashboard';
+let currentTab = 'Dashboard';
 
-// 1. Sidebar Navigation Switcher (Users, Agents, Properties, Hotels, Projects, Dashboard)
-function setupSidebarNavigation() {
+// 1. Render Table Content
+function renderTable(type) {
+    const tableHead = document.getElementById('tableHeadRow');
+    const tableBody = document.getElementById('tableBody');
+    const sectionTitle = document.getElementById('tableSectionTitle');
+    
+    if (!tableBody || !tableHead) return;
+    tableBody.innerHTML = '';
+
+    if (type === 'Users') {
+        if (sectionTitle) sectionTitle.innerText = "System Users List";
+        tableHead.innerHTML = `
+            <th>USER ID</th>
+            <th>NAME</th>
+            <th>EMAIL</th>
+            <th>ROLE</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>`;
+
+        usersList.forEach(u => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td><strong>${u.id}</strong></td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${u.role}</td>
+                    <td><span class="badge status-approved">${u.status}</span></td>
+                    <td class="action-col">
+                        <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <div class="action-dropdown">
+                            <a href="#" onclick="alert('Viewing User: ${u.name}')"><i class="fa-regular fa-eye"></i> View User</a>
+                            <a href="#" class="text-danger" onclick="deleteUser('${u.id}')"><i class="fa-regular fa-trash-can"></i> Remove</a>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+    } else if (type === 'Agents') {
+        if (sectionTitle) sectionTitle.innerText = "Registered Agents List";
+        tableHead.innerHTML = `
+            <th>AGENT ID</th>
+            <th>NAME</th>
+            <th>EMAIL</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>`;
+
+        agentsList.forEach(a => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td><strong>${a.id}</strong></td>
+                    <td>${a.name}</td>
+                    <td>${a.email}</td>
+                    <td><span class="badge ${a.status === 'Approved' ? 'status-approved' : 'status-pending'}">${a.status}</span></td>
+                    <td class="action-col">
+                        <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <div class="action-dropdown">
+                            <a href="#" onclick="approveAgent('${a.id}')"><i class="fa-solid fa-check"></i> Approve Agent</a>
+                            <a href="#" class="text-danger" onclick="deleteAgent('${a.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+    } else {
+        // Dashboard, Properties, Hotels, Projects
+        if (sectionTitle) sectionTitle.innerText = `${type} Review Queue`;
+        tableHead.innerHTML = `
+            <th>PROPERTY</th>
+            <th>OWNER / AGENT</th>
+            <th>PRICE (BDT)</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>`;
+
+        const displayItems = (type === 'Dashboard' || type === 'Properties') 
+            ? propertiesList 
+            : propertiesList.filter(p => p.category.toLowerCase() === type.toLowerCase());
+
+        displayItems.forEach(p => {
+            const formattedPrice = p.price.toLocaleString('en-BD');
+            const statusClass = p.status === 'Approved' ? 'status-approved' : 'status-pending';
+            
+            tableBody.innerHTML += `
+                <tr>
+                    <td class="prop-col">
+                        <img src="${p.image}" alt="Img" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover;">
+                        <div style="display:inline-block; margin-left: 10px; vertical-align: middle;">
+                            <strong style="display:block;">${p.title}</strong>
+                            <small style="color: #64748b;">${p.location}</small>
+                        </div>
+                    </td>
+                    <td>${p.owner}</td>
+                    <td>৳ ${formattedPrice}</td>
+                    <td><span class="badge ${statusClass}">${p.status}</span></td>
+                    <td class="action-col">
+                        <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <div class="action-dropdown">
+                            <a href="#" onclick="alert('Viewing details for ${p.id}')"><i class="fa-regular fa-eye"></i> View Details</a>
+                            <a href="#" onclick="updatePropertyStatus('${p.id}', 'Approved')"><i class="fa-solid fa-check"></i> Approve</a>
+                            <a href="#" onclick="updatePropertyStatus('${p.id}', 'Pending')"><i class="fa-solid fa-clock"></i> Set Pending</a>
+                            <a href="#" class="text-danger" onclick="deleteProperty('${p.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+    }
+}
+
+// 2. Action Menu Dropdown Toggle
+function toggleActionDropdown(e) {
+    e.stopPropagation();
+    document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
+    const dropdown = e.currentTarget.nextElementSibling;
+    if (dropdown) dropdown.classList.toggle('show');
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
+});
+
+// 3. Button Actions: Approve / Delete Logic
+function updatePropertyStatus(id, newStatus) {
+    const item = propertiesList.find(p => p.id === id);
+    if (item) {
+        item.status = newStatus;
+        alert(`Property ${id} is now ${newStatus}`);
+        renderTable(currentTab);
+    }
+}
+
+function deleteProperty(id) {
+    if (confirm(`Delete property ${id}?`)) {
+        propertiesList = propertiesList.filter(p => p.id !== id);
+        renderTable(currentTab);
+    }
+}
+
+function approveAgent(id) {
+    const agent = agentsList.find(a => a.id === id);
+    if (agent) {
+        agent.status = 'Approved';
+        alert(`Agent ${agent.name} Approved!`);
+        renderTable(currentTab);
+    }
+}
+
+function deleteUser(id) {
+    if (confirm("Are you sure you want to delete this user?")) {
+        usersList = usersList.filter(u => u.id !== id);
+        renderTable(currentTab);
+    }
+}
+
+// 4. Table Filter / Search Trigger
+function filterAdminTable() {
+    const searchVal = (document.getElementById('adminTableSearch')?.value || document.getElementById('globalAdminSearch')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('#tableBody tr');
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(searchVal) ? '' : 'none';
+    });
+}
+
+// 5. Sidebar Navigation Link Attachments
+document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
+
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            const menuText = item.innerText.trim();
-            currentActiveView = menuText;
-            loadDataByMenu(menuText);
+            const menuName = item.innerText.trim();
+            currentTab = menuName;
+            
+            const titleEl = document.getElementById('adminPageTitle');
+            if (titleEl) titleEl.innerText = `${menuName} Overview`;
+
+            renderTable(menuName);
         });
     });
-}
 
-// 2. Load Table & Stats Data dynamically from Firebase/Array
-function loadDataByMenu(menu) {
-    const tableTitle = document.querySelector('.table-header h3');
-    const tableHead = document.querySelector('#adminPropertyTable thead');
-    const tableBody = document.querySelector('#adminPropertyTable tbody');
-
-    if (!tableBody) return;
-    tableBody.innerHTML = '';
-
-    if (menu === 'Users') {
-        if (tableTitle) tableTitle.innerText = "System Users List";
-        tableHead.innerHTML = `
-            <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>`;
-        
-        fetchCollectionData('users', adminUsersData, (data) => {
-            data.forEach(user => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td><strong>${user.id}</strong></td>
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
-                        <td><span class="badge status-approved">${user.status}</span></td>
-                        <td class="action-col">
-                            <button class="btn-action" onclick="toggleDropdown(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            <div class="action-dropdown">
-                                <a href="#" onclick="alert('User ID: ${user.id}')"><i class="fa-regular fa-eye"></i> View</a>
-                                <a href="#" class="text-danger" onclick="deleteUser('${user.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-        });
-
-    } else if (menu === 'Agents') {
-        if (tableTitle) tableTitle.innerText = "Registered Agents List";
-        tableHead.innerHTML = `
-            <tr>
-                <th>Agent ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>`;
-
-        fetchCollectionData('agents', adminAgentsData, (data) => {
-            data.forEach(agent => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td><strong>${agent.id}</strong></td>
-                        <td>${agent.name}</td>
-                        <td>${agent.email}</td>
-                        <td><span class="badge ${agent.status === 'Approved' ? 'status-approved' : 'status-pending'}">${agent.status}</span></td>
-                        <td class="action-col">
-                            <button class="btn-action" onclick="toggleDropdown(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            <div class="action-dropdown">
-                                <a href="#" onclick="updateStatus('agents', '${agent.id}', 'Approved')"><i class="fa-solid fa-check"></i> Approve Agent</a>
-                                <a href="#" class="text-danger" onclick="deleteUser('${agent.id}')"><i class="fa-regular fa-trash-can"></i> Remove</a>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-        });
-
-    } else {
-        // Properties, Hotels, Projects, or Dashboard Review Queue
-        if (tableTitle) tableTitle.innerText = `${menu} Review Queue`;
-        tableHead.innerHTML = `
-            <tr>
-                <th>Property</th>
-                <th>Owner / Agent</th>
-                <th>Price (BDT)</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>`;
-
-        fetchCollectionData('properties', adminPropertiesData, (data) => {
-            const filtered = (menu === 'Dashboard' || menu === 'Properties') 
-                ? data 
-                : data.filter(item => item.category === menu);
-
-            filtered.forEach(prop => {
-                const formattedPrice = prop.price ? prop.price.toLocaleString('en-BD') : '0';
-                tableBody.innerHTML += `
-                    <tr>
-                        <td class="prop-col">
-                            <img src="${prop.image}" alt="Prop">
-                            <div>
-                                <strong>${prop.title}</strong>
-                                <small>${prop.location}</small>
-                            </div>
-                        </td>
-                        <td>${prop.owner}</td>
-                        <td>৳ ${formattedPrice}</td>
-                        <td><span class="badge ${prop.status === 'Approved' ? 'status-approved' : 'status-pending'}">${prop.status}</span></td>
-                        <td class="action-col">
-                            <button class="btn-action" onclick="toggleDropdown(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            <div class="action-dropdown">
-                                <a href="#" onclick="alert('Viewing Details for: ${prop.id}')"><i class="fa-regular fa-eye"></i> View Details</a>
-                                <a href="#" onclick="updatePropertyStatus('${prop.id}', 'Approved')"><i class="fa-solid fa-check"></i> Approve</a>
-                                <a href="#" onclick="updatePropertyStatus('${prop.id}', 'Rejected')"><i class="fa-solid fa-xmark"></i> Reject</a>
-                                <a href="#" class="text-danger" onclick="deleteProperty('${prop.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-        });
-    }
-}
-
-// 3. Helper to Fetch Data from Firebase or Array
-function fetchCollectionData(collectionName, fallbackData, callback) {
-    if (db) {
-        db.collection(collectionName).get().then(snapshot => {
-            let data = [];
-            snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-            if (data.length > 0) callback(data);
-            else callback(fallbackData);
-        }).catch(() => callback(fallbackData));
-    } else {
-        callback(fallbackData);
-    }
-}
-
-// 4. Action Buttons (Approve, Reject, Delete)
-function updatePropertyStatus(id, newStatus) {
-    if (db) {
-        db.collection('properties').doc(id).update({ status: newStatus }).then(() => {
-            alert(`Property ${id} updated to ${newStatus}`);
-            loadDataByMenu(currentActiveView);
-        });
-    } else {
-        const item = adminPropertiesData.find(p => p.id === id);
-        if (item) item.status = newStatus;
-        alert(`Property ${id} updated to ${newStatus}`);
-        loadDataByMenu(currentActiveView);
-    }
-}
-
-function deleteProperty(id) {
-    if (confirm("Are you sure you want to delete this listing?")) {
-        adminPropertiesData = adminPropertiesData.filter(p => p.id !== id);
-        loadDataByMenu(currentActiveView);
-    }
-}
-
-// 5. Dropdown Actions & Search Filters
-function toggleDropdown(btn) {
-    document.querySelectorAll('.action-dropdown').forEach(d => {
-        if (d !== btn.nextElementSibling) d.classList.remove('show');
-    });
-    const dropdown = btn.nextElementSibling;
-    if (dropdown) dropdown.classList.toggle('show');
-}
-
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.action-col')) {
-        document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
-    }
-});
-
-function filterAdminTable() {
-    const input = document.getElementById('adminTableSearch')?.value.toLowerCase() || '';
-    const rows = document.querySelectorAll('#adminPropertyTable tbody tr');
-    rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
-    });
-}
-
-// DOM Ready
-document.addEventListener('DOMContentLoaded', () => {
-    setupSidebarNavigation();
-    loadDataByMenu('Dashboard');
-    
-    const searchInput = document.getElementById('adminTableSearch');
-    if (searchInput) searchInput.addEventListener('keyup', filterAdminTable);
+    // Initial Load
+    renderTable('Dashboard');
 });
