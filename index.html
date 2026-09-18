@@ -1,38 +1,47 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mahrim Properties | Luxury Real Estate</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Mahrim Properties | Luxury Real Estate & Rentals</title>
+    <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Top Navbar -->
+    <!-- Header Navbar -->
     <header class="main-header">
         <div class="logo">
-            <i class="fa-solid fa-city"></i>
+            <i class="fa-solid fa-building-circle-check"></i>
             <span>Mahrim Properties</span>
         </div>
-        <div class="auth-buttons">
-            <button onclick="openUserModal('login')" class="btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
-            <button onclick="openUserModal('signup')" class="btn-primary"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+        
+        <div id="authNavContainer">
+            <div id="guestNav">
+                <button onclick="openUserModal('login')" class="btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                <button onclick="openUserModal('signup')" class="btn-primary"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+            </div>
+            <div id="userNav" style="display: none;" class="user-profile-badge">
+                <i class="fa-solid fa-user-circle"></i>
+                <span id="userNameDisplay"></span>
+                <button onclick="handleUserLogout()" class="btn-logout"><i class="fa-solid fa-power-off"></i></button>
+            </div>
         </div>
     </header>
 
     <!-- Hero Banner Section -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1>আপনার স্বপ্নের আবাসন খুঁজুন সহজেই</h1>
-            <p>বিলাসবহুল ফ্লাট বুকিং, কেনাবেচা ও হোটেল রুমের সেরা ডিজিটাল প্ল্যাটফর্ম</p>
+            <h1>Find Your Dream Property & Luxury Apartments</h1>
+            <p>Explore top rated flats for sale, rent, and premium hotel rooms seamlessly.</p>
             
-            <!-- Modern Search Bar -->
+            <!-- Global Search & Filter Bar -->
             <div class="search-box">
                 <div class="input-group">
                     <i class="fa-solid fa-list-check"></i>
                     <select id="filterCategory" onchange="filterProperties()">
-                        <option value="all">সব ক্যাটাগরি</option>
+                        <option value="all">All Categories</option>
                         <option value="rent">Flat Rent</option>
                         <option value="sell">Flat Sell</option>
                         <option value="hotel">Hotel Room</option>
@@ -40,26 +49,57 @@
                 </div>
                 <div class="input-group">
                     <i class="fa-solid fa-location-dot"></i>
-                    <input type="text" id="filterLocation" oninput="filterProperties()" placeholder="লোকেশন (যেমন: মিরপুর, উত্তরা)">
+                    <input type="text" id="filterLocation" oninput="filterProperties()" placeholder="Search Location (e.g. Uttara)">
                 </div>
                 <div class="input-group">
-                    <i class="fa-solid fa-bangladeshi-taka-sign"></i>
-                    <input type="number" id="filterPrice" oninput="filterProperties()" placeholder="সর্বোচ্চ বাজেট">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                    <input type="number" id="filterPrice" oninput="filterProperties()" placeholder="Max Budget (BDT)">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Property Section Container -->
+    <!-- Listings Container -->
     <section class="container">
         <div class="section-title">
-            <h2>সর্বশেষ যুক্ত হওয়া প্রোপার্টি সমূহ</h2>
-            <p>আপনার পছন্দের ফ্লাট বা রুম বেছে নিন এবং সরাসরি চ্যাট করুন</p>
+            <h2>Featured Listings</h2>
+            <p>Directly contact property owners via WhatsApp with one click</p>
         </div>
         
-        <!-- Grid for Property Cards -->
         <main class="property-grid" id="propertyList"></main>
     </section>
+
+    <!-- Auth Modal -->
+    <div id="userAuthModal" class="admin-login-overlay" style="display: none;">
+        <div class="login-box" id="userLoginBox">
+            <div class="modal-header">
+                <h2>User Login</h2>
+                <span onclick="closeUserModal()" class="close-btn">&times;</span>
+            </div>
+            <form onsubmit="handleEmailLogin(event)">
+                <input type="email" id="loginEmail" placeholder="Email Address" required>
+                <input type="password" id="loginPass" placeholder="Password" required>
+                <button type="submit" class="btn-primary full-width">Login</button>
+            </form>
+            <div class="divider"><span>OR</span></div>
+            <button onclick="handleGoogleLogin()" class="btn-google full-width"><i class="fa-brands fa-google"></i> Continue with Google</button>
+            <p class="switch-text">Don't have an account? <a href="#" onclick="switchModal('signup')">Sign Up</a></p>
+        </div>
+
+        <div class="login-box" id="userSignupBox" style="display: none;">
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <span onclick="closeUserModal()" class="close-btn">&times;</span>
+            </div>
+            <form onsubmit="handleEmailSignup(event)">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email Address" required>
+                <input type="password" id="signupPass" placeholder="Password" required>
+                <button type="submit" class="btn-primary full-width">Create Account</button>
+            </form>
+            <p class="switch-text">Already have an account? <a href="#" onclick="switchModal('login')">Login</a></p>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
