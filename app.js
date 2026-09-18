@@ -1,136 +1,161 @@
-// Firebase Configuration (Replace with your actual Firebase Credentials)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+// Sample Database Array aligning with Blueprint Section 9 & 60
+let propertiesData = [
+    {
+        id: "RE-10001",
+        title: "Luxury 3 Bedroom Apartment",
+        location: "Uttara, Dhaka",
+        price: 12000000,
+        beds: 3,
+        baths: 3,
+        sqft: 1650,
+        purpose: "FOR SALE",
+        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+        verifiedAgent: true
+    },
+    {
+        id: "RE-10002",
+        title: "Modern Duplex Flat for Rent",
+        location: "Gulshan 2, Dhaka",
+        price: 85000,
+        beds: 4,
+        baths: 4,
+        sqft: 2800,
+        purpose: "FOR RENT",
+        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+        verifiedAgent: true
+    },
+    {
+        id: "RE-10003",
+        title: "Commercial Office Space",
+        location: "Banani, Dhaka",
+        price: 45000000,
+        beds: 0,
+        baths: 2,
+        sqft: 3200,
+        purpose: "FOR SALE",
+        image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
+        verifiedAgent: true
+    }
+];
 
-// Initialize Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.database();
-const auth = firebase.auth();
+let selectedPurpose = 'all';
 
-// Fetch and Render Live Properties
-function loadProperties() {
-    const propertyGrid = document.getElementById('propertyList') || document.getElementById('adminPropertyList');
-    if (!propertyGrid) return;
+// Render Properties (Section 9 Card Specification)
+function renderProperties(data) {
+    const container = document.getElementById('propertyContainer');
+    const countTag = document.getElementById('resultsCount');
+    
+    container.innerHTML = '';
+    countTag.innerText = `Showing ${data.length} Properties`;
 
-    db.ref('properties').on('value', (snapshot) => {
-        propertyGrid.innerHTML = '';
-        const data = snapshot.val();
-        
-        if (!data) {
-            propertyGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #94a3b8; font-size: 1.1rem; padding: 40px;">No properties available right now.</p>`;
-            return;
-        }
+    if (data.length === 0) {
+        container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding: 40px; color: #64748b;">No properties match your filter criteria.</p>`;
+        return;
+    }
 
-        Object.keys(data).forEach((key) => {
-            const item = data[key];
-            const isAdminPage = window.location.pathname.includes('admin.html');
-            
-            const cardHtml = `
-                <div class="property-card">
-                    <span class="tag">${item.category}</span>
-                    <img src="${item.image}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80'">
-                    <div class="card-details">
-                        <h3>${item.title}</h3>
-                        <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
-                        <div class="price">BDT ${Number(item.price).toLocaleString()}</div>
-                        ${isAdminPage ? 
-                            `<button onclick="deleteProperty('${key}')" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete Listing</button>` : 
-                            `<a href="https://wa.me/${item.whatsapp}?text=Hi,\%20I\%20am\%20interested\%20in\%20${encodeURIComponent(item.title)}" target="_blank" class="book-btn"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a>`
-                        }
-                    </div>
+    data.forEach(item => {
+        const formattedPrice = item.price.toLocaleString('en-BD');
+        const cardHtml = `
+            <div class="property-card">
+                <div class="property-card-img-wrapper">
+                    <img src="${item.image}" alt="${item.title}">
+                    <span class="tag-badge">${item.purpose}</span>
+                    <button class="fav-btn" title="Save Property"><i class="fa-regular fa-heart"></i></button>
                 </div>
-            `;
-            propertyGrid.innerHTML += cardHtml;
-        });
+                <div class="card-details">
+                    <div class="card-price">৳ ${formattedPrice}</div>
+                    <h3 class="card-title">${item.title}</h3>
+                    <div class="card-location"><i class="fa-solid fa-location-dot"></i> ${item.location}</div>
+                    <div class="card-features">
+                        <span><i class="fa-solid fa-bed"></i> ${item.beds} Beds</span>
+                        <span><i class="fa-solid fa-bath"></i> ${item.baths} Baths</span>
+                        <span><i class="fa-solid fa-ruler-combined"></i> ${item.sqft} sqft</span>
+                    </div>
+                    ${item.verifiedAgent ? `<div class="card-agent-tag"><i class="fa-solid fa-circle-check"></i> Verified Agent ✓</div>` : ''}
+                    <button class="btn-view-details" onclick="alert('Viewing Property ID: ${item.id}')">View Details</button>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHtml;
     });
 }
 
-// Admin Function: Add Property
-function handlePropertySubmit(e) {
-    e.preventDefault();
-    const title = document.getElementById('propTitle').value;
-    const category = document.getElementById('propCategory').value;
-    const location = document.getElementById('propLocation').value;
-    const price = document.getElementById('propPrice').value;
-    const image = document.getElementById('propImage').value;
-    const whatsapp = document.getElementById('propWhatsapp').value;
-
-    const newPropRef = db.ref('properties').push();
-    newPropRef.set({
-        title, category, location, price, image, whatsapp,
-        createdAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        alert("Property published successfully!");
-        document.getElementById('addPropertyForm').reset();
-    }).catch((err) => {
-        alert("Error adding property: " + err.message);
-    });
-}
-
-// Admin Function: Delete Property
-function deleteProperty(key) {
-    if (confirm("Are you sure you want to delete this listing?")) {
-        db.ref(`properties/${key}`).remove()
-            .then(() => alert("Property deleted successfully!"))
-            .catch((err) => alert("Error deleting: " + err.message));
-    }
-}
-
-// Global Filter System
+// Search & Filter (Section 8 & 50)
 function filterProperties() {
-    const category = document.getElementById('filterCategory')?.value.toLowerCase();
-    const location = document.getElementById('filterLocation')?.value.toLowerCase();
-    const maxPrice = Number(document.getElementById('filterPrice')?.value);
+    const locationInput = document.getElementById('searchLocation').value.toLowerCase();
+    const typeInput = document.getElementById('searchType').value;
+    const priceInput = parseFloat(document.getElementById('searchPrice').value);
 
-    const cards = document.querySelectorAll('.property-card');
-    cards.forEach(card => {
-        const cardCategory = card.querySelector('.tag')?.innerText.toLowerCase();
-        const cardLocation = card.querySelector('p')?.innerText.toLowerCase();
-        const cardPriceText = card.querySelector('.price')?.innerText.replace(/[^0-9]/g, '');
-        const cardPrice = Number(cardPriceText);
+    const filtered = propertiesData.filter(item => {
+        const matchLocation = item.location.toLowerCase().includes(locationInput);
+        const matchPrice = isNaN(priceInput) || item.price <= priceInput;
+        const matchType = typeInput === 'all' || item.title.toLowerCase().includes(typeInput);
 
-        const matchCat = (category === 'all' || !category) || cardCategory.includes(category);
-        const matchLoc = !location || cardLocation.includes(location);
-        const matchPrice = !maxPrice || (cardPrice <= maxPrice);
-
-        if (matchCat && matchLoc && matchPrice) {
-            card.style.display = 'flex';
-        } else {
-            card.style.display = 'none';
-        }
+        return matchLocation && matchPrice && matchType;
     });
+
+    renderProperties(filtered);
 }
 
-// Auth Modal Controls
-function openUserModal(type) {
-    document.getElementById('userAuthModal').style.display = 'flex';
-    if (type === 'login') {
-        document.getElementById('userLoginBox').style.display = 'block';
-        document.getElementById('userSignupBox').style.display = 'none';
-    } else {
-        document.getElementById('userLoginBox').style.display = 'none';
-        document.getElementById('userSignupBox').style.display = 'block';
+// Purpose Tabs
+function setPurpose(type, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedPurpose = type;
+}
+
+// Toggle Admin Panel (Section 31 & 37)
+function toggleAdminPanel() {
+    const sec = document.getElementById('adminPanelSection');
+    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    if(sec.style.display === 'block') {
+        sec.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-function closeUserModal() {
-    document.getElementById('userAuthModal').style.display = 'none';
+// Add New Property dynamically (Section 33)
+function handleAddNewProperty(e) {
+    e.preventDefault();
+    const newProperty = {
+        id: `RE-${Math.floor(10000 + Math.random() * 90000)}`,
+        title: document.getElementById('pTitle').value,
+        location: document.getElementById('pLocation').value,
+        price: parseFloat(document.getElementById('pPrice').value),
+        beds: parseInt(document.getElementById('pBeds').value),
+        baths: parseInt(document.getElementById('pBaths').value),
+        sqft: parseInt(document.getElementById('pSqft').value),
+        purpose: document.getElementById('pPurpose').value,
+        image: document.getElementById('pImg').value,
+        verifiedAgent: true
+    };
+
+    propertiesData.unshift(newProperty);
+    renderProperties(propertiesData);
+    document.getElementById('addPropertyForm').reset();
+    alert('Property added successfully and submitted for Admin approval!');
 }
 
-function switchModal(type) {
-    openUserModal(type);
+// Auth Modal
+function openAuthModal(type) {
+    document.getElementById('authModal').style.display = 'flex';
+    switchAuth(type);
 }
 
-// Auto Load Init
+function closeAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+}
+
+function switchAuth(type) {
+    if(type === 'login') {
+        document.getElementById('loginBox').style.display = 'block';
+        document.getElementById('signupBox').style.display = 'none';
+    } else {
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('signupBox').style.display = 'block';
+    }
+}
+
+// Initial Load
 document.addEventListener('DOMContentLoaded', () => {
-    loadProperties();
+    renderProperties(propertiesData);
 });
