@@ -1,4 +1,4 @@
-// Data Stores
+// Local Data Store
 let propertiesList = [
     { id: "TP-101", title: "Luxury 3 Bedroom Apartment", location: "Uttara Sector 10, Dhaka", owner: "Agent Mahmud", price: 12500000, status: "Approved", category: "Properties", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=100&q=80" },
     { id: "TP-102", title: "Modern Duplex Penthouse", location: "Gulshan 2, Dhaka", owner: "Kazi Rahman", price: 38000000, status: "Pending", category: "Properties", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=100&q=80" }
@@ -16,12 +16,12 @@ let agentsList = [
 
 let currentTab = 'Dashboard';
 
-// 1. Render Table Content
+// Main Table Render Function
 function renderTable(type) {
-    const tableHead = document.getElementById('tableHeadRow');
-    const tableBody = document.getElementById('tableBody');
+    const tableHead = document.querySelector('#adminMainTable thead tr') || document.getElementById('tableHeadRow');
+    const tableBody = document.querySelector('#adminMainTable tbody') || document.getElementById('tableBody');
     const sectionTitle = document.getElementById('tableSectionTitle');
-    
+
     if (!tableBody || !tableHead) return;
     tableBody.innerHTML = '';
 
@@ -46,8 +46,8 @@ function renderTable(type) {
                     <td class="action-col">
                         <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         <div class="action-dropdown">
-                            <a href="#" onclick="alert('Viewing User: ${u.name}')"><i class="fa-regular fa-eye"></i> View User</a>
-                            <a href="#" class="text-danger" onclick="deleteUser('${u.id}')"><i class="fa-regular fa-trash-can"></i> Remove</a>
+                            <a href="javascript:void(0)" onclick="alert('Viewing User: ${u.name}')"><i class="fa-regular fa-eye"></i> View User</a>
+                            <a href="javascript:void(0)" class="text-danger" onclick="deleteUser('${u.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
                         </div>
                     </td>
                 </tr>`;
@@ -72,8 +72,8 @@ function renderTable(type) {
                     <td class="action-col">
                         <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         <div class="action-dropdown">
-                            <a href="#" onclick="approveAgent('${a.id}')"><i class="fa-solid fa-check"></i> Approve Agent</a>
-                            <a href="#" class="text-danger" onclick="deleteAgent('${a.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
+                            <a href="javascript:void(0)" onclick="approveAgent('${a.id}')"><i class="fa-solid fa-check"></i> Approve Agent</a>
+                            <a href="javascript:void(0)" class="text-danger" onclick="deleteAgent('${a.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
                         </div>
                     </td>
                 </tr>`;
@@ -94,14 +94,14 @@ function renderTable(type) {
             : propertiesList.filter(p => p.category.toLowerCase() === type.toLowerCase());
 
         displayItems.forEach(p => {
-            const formattedPrice = p.price.toLocaleString('en-BD');
+            const formattedPrice = p.price ? p.price.toLocaleString('en-BD') : '0';
             const statusClass = p.status === 'Approved' ? 'status-approved' : 'status-pending';
-            
+
             tableBody.innerHTML += `
                 <tr>
-                    <td class="prop-col">
-                        <img src="${p.image}" alt="Img" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover;">
-                        <div style="display:inline-block; margin-left: 10px; vertical-align: middle;">
+                    <td class="prop-col" style="display: flex; align-items: center; gap: 10px;">
+                        <img src="${p.image}" alt="Prop" style="width: 42px; height: 42px; border-radius: 6px; object-fit: cover;">
+                        <div>
                             <strong style="display:block;">${p.title}</strong>
                             <small style="color: #64748b;">${p.location}</small>
                         </div>
@@ -112,10 +112,10 @@ function renderTable(type) {
                     <td class="action-col">
                         <button class="btn-action" onclick="toggleActionDropdown(event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         <div class="action-dropdown">
-                            <a href="#" onclick="alert('Viewing details for ${p.id}')"><i class="fa-regular fa-eye"></i> View Details</a>
-                            <a href="#" onclick="updatePropertyStatus('${p.id}', 'Approved')"><i class="fa-solid fa-check"></i> Approve</a>
-                            <a href="#" onclick="updatePropertyStatus('${p.id}', 'Pending')"><i class="fa-solid fa-clock"></i> Set Pending</a>
-                            <a href="#" class="text-danger" onclick="deleteProperty('${p.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
+                            <a href="javascript:void(0)" onclick="alert('Details for ${p.title}')"><i class="fa-regular fa-eye"></i> View Details</a>
+                            <a href="javascript:void(0)" onclick="updatePropertyStatus('${p.id}', 'Approved')"><i class="fa-solid fa-check"></i> Approve</a>
+                            <a href="javascript:void(0)" onclick="updatePropertyStatus('${p.id}', 'Pending')"><i class="fa-solid fa-clock"></i> Set Pending</a>
+                            <a href="javascript:void(0)" class="text-danger" onclick="deleteProperty('${p.id}')"><i class="fa-regular fa-trash-can"></i> Delete</a>
                         </div>
                     </td>
                 </tr>`;
@@ -123,30 +123,35 @@ function renderTable(type) {
     }
 }
 
-// 2. Action Menu Dropdown Toggle
+// Action Menu Dropdown Handler
 function toggleActionDropdown(e) {
     e.stopPropagation();
-    document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
     const dropdown = e.currentTarget.nextElementSibling;
+    
+    document.querySelectorAll('.action-dropdown').forEach(d => {
+        if (d !== dropdown) d.classList.remove('show');
+    });
+
     if (dropdown) dropdown.classList.toggle('show');
 }
 
+// Close Dropdowns on outside click
 document.addEventListener('click', () => {
     document.querySelectorAll('.action-dropdown').forEach(d => d.classList.remove('show'));
 });
 
-// 3. Button Actions: Approve / Delete Logic
+// Action Handlers
 function updatePropertyStatus(id, newStatus) {
     const item = propertiesList.find(p => p.id === id);
     if (item) {
         item.status = newStatus;
-        alert(`Property ${id} is now ${newStatus}`);
+        alert(`Property ${id} status changed to ${newStatus}`);
         renderTable(currentTab);
     }
 }
 
 function deleteProperty(id) {
-    if (confirm(`Delete property ${id}?`)) {
+    if (confirm(`Are you sure to delete ${id}?`)) {
         propertiesList = propertiesList.filter(p => p.id !== id);
         renderTable(currentTab);
     }
@@ -162,43 +167,52 @@ function approveAgent(id) {
 }
 
 function deleteUser(id) {
-    if (confirm("Are you sure you want to delete this user?")) {
+    if (confirm("Delete this user?")) {
         usersList = usersList.filter(u => u.id !== id);
         renderTable(currentTab);
     }
 }
 
-// 4. Table Filter / Search Trigger
-function filterAdminTable() {
-    const searchVal = (document.getElementById('adminTableSearch')?.value || document.getElementById('globalAdminSearch')?.value || '').toLowerCase().trim();
-    const rows = document.querySelectorAll('#tableBody tr');
+function deleteAgent(id) {
+    if (confirm("Remove this agent?")) {
+        agentsList = agentsList.filter(a => a.id !== id);
+        renderTable(currentTab);
+    }
+}
 
+// Table Filter Functionality
+function filterAdminTable() {
+    const searchVal = (
+        document.getElementById('adminTableSearch')?.value || 
+        document.getElementById('globalAdminSearch')?.value || ''
+    ).toLowerCase().trim();
+
+    const rows = document.querySelectorAll('#adminMainTable tbody tr');
     rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(searchVal) ? '' : 'none';
+        row.style.display = row.innerText.toLowerCase().includes(searchVal) ? '' : 'none';
     });
 }
 
-// 5. Sidebar Navigation Link Attachments
+// Initialize Menu Click Events
 document.addEventListener('DOMContentLoaded', () => {
-    const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
+    const menuItems = document.querySelectorAll('.sidebar-menu a, .sidebar a');
 
-    navItems.forEach(item => {
+    menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            e.preventDefault();
-            navItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
+            const text = item.innerText.trim();
+            if (['Dashboard', 'Users', 'Agents', 'Properties', 'Hotels', 'Projects'].includes(text)) {
+                e.preventDefault();
+                menuItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
 
-            const menuName = item.innerText.trim();
-            currentTab = menuName;
-            
-            const titleEl = document.getElementById('adminPageTitle');
-            if (titleEl) titleEl.innerText = `${menuName} Overview`;
+                currentTab = text;
+                const pageTitle = document.getElementById('adminPageTitle');
+                if (pageTitle) pageTitle.innerText = `${text} Overview`;
 
-            renderTable(menuName);
+                renderTable(text);
+            }
         });
     });
 
-    // Initial Load
     renderTable('Dashboard');
 });
