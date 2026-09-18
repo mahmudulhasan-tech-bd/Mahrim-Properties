@@ -605,3 +605,82 @@ h1, h2, h3, h4 {
     .nav-menu { display: none; }
     .mobile-bottom-nav { display: flex; }
 }
+/* Action Dropdown Menu Fix */
+.action-col {
+    position: relative;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: 1.1rem;
+    color: var(--text-secondary, #64748b);
+    border-radius: 4px;
+}
+
+.btn-action:hover {
+    background-color: #f1f5f9;
+}
+
+.action-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    z-index: 1000;
+    min-width: 150px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.action-dropdown.show {
+    display: block !important;
+}
+
+.action-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    color: #334155;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.action-dropdown a:hover {
+    background-color: #f8fafc;
+}
+
+.action-dropdown a.text-danger {
+    color: #ef4444;
+}
+
+.action-dropdown a.text-danger:hover {
+    background-color: #fef2f2;
+}
+
+/* Status Badges */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-approved {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
