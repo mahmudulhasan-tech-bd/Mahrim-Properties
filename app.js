@@ -16,64 +16,95 @@ if (!firebase.apps.length) {
 const db = firebase.database();
 const auth = firebase.auth();
 let allProperties = [];
-let currentCategoryFilter = 'all';
+let whatsappNumber = "+8801700000000";
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchProperties();
     loadSiteSettings();
 
-    if (document.getElementById('adminAuthModal')) {
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                document.getElementById('adminAuthModal').style.display = 'none';
-                document.getElementById('adminDashboard').style.display = 'block';
-                if(document.getElementById('loggedInUserText')){
-                    document.getElementById('loggedInUserText').innerText = "Logged in: " + user.email;
-                }
-            } else {
-                document.getElementById('adminDashboard').style.display = 'none';
-                document.getElementById('adminAuthModal').style.display = 'flex';
-            }
-        });
-    }
+    // Listen to Login Status
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            document.getElementById('guestNav').style.display = 'none';
+            document.getElementById('userNav').style.display = 'flex';
+            document.getElementById('userNameDisplay').innerText = user.displayName || user.email.split('@')[0];
+            closeUserModal();
+        } else {
+            document.getElementById('guestNav').style.display = 'block';
+            document.getElementById('userNav').style.display = 'none';
+        }
+    });
 });
 
+// Modal UI Controllers
+function openUserModal(type) {
+    document.getElementById('userAuthModal').style.display = 'flex';
+    switchModal(type);
+}
+
+function closeUserModal() {
+    document.getElementById('userAuthModal').style.display = 'none';
+}
+
+function switchModal(type) {
+    if (type === 'login') {
+        document.getElementById('userLoginBox').style.display = 'block';
+        document.getElementById('userSignupBox').style.display = 'none';
+    } else {
+        document.getElementById('userLoginBox').style.display = 'none';
+        document.getElementById('userSignupBox').style.display = 'block';
+    }
+}
+
+// 1. Email/Password Sign Up
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const pass = document.getElementById('signupPass').value;
+
+    auth.createUserWithEmailAndPassword(email, pass)
+        .then((userCredential) => {
+            return userCredential.user.updateProfile({ displayName: name });
+        })
+        .then(() => {
+            alert('Account created successfully!');
+        })
+        .catch(err => alert('Sign Up Error: ' + err.message));
+}
+
+// 2. Email/Password Login
 function handleEmailLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('adminEmail').value;
-    const pass = document.getElementById('adminPassword').value;
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
 
     auth.signInWithEmailAndPassword(email, pass)
-        .then(() => alert("Login Successful!"))
-        .catch((error) => alert("Login Failed: " + error.message));
+        .then(() => alert('Logged in successfully!'))
+        .catch(err => alert('Login Error: ' + err.message));
 }
 
-function handleForgotPassword(e) {
-    e.preventDefault();
-    const email = document.getElementById('resetEmail').value;
-
-    auth.sendPasswordResetEmail(email)
-        .then(() => {
-            alert("Password Reset Link sent to your Email!");
-            showLoginBox();
-        })
-        .catch((error) => alert("Error: " + error.message));
+// 3. Google Sign-In
+function handleGoogleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then(() => alert('Google Sign-In successful!'))
+        .catch(err => alert('Google Auth Error: ' + err.message));
 }
 
-function handleLogout() {
-    auth.signOut().then(() => alert("Logged Out Successfully."));
+// 4. Facebook Sign-In
+function handleFacebookLogin() {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    auth.signInWithPopup(provider)
+        .then(() => alert('Facebook Sign-In successful!'))
+        .catch(err => alert('Facebook Auth Error: ' + err.message));
 }
 
-function showForgotBox() {
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('forgotBox').style.display = 'block';
+function handleUserLogout() {
+    auth.signOut().then(() => alert('Logged Out!'));
 }
 
-function showLoginBox() {
-    document.getElementById('forgotBox').style.display = 'none';
-    document.getElementById('loginBox').style.display = 'block';
-}
-
+// Fetch Properties
 function fetchProperties() {
     db.ref('properties').on('value', (snapshot) => {
         allProperties = [];
@@ -82,157 +113,14 @@ function fetchProperties() {
             allProperties.push({ id, ...data[id] });
         }
         renderListings(allProperties);
-        if (document.getElementById('adminPropertyList')) {
-            renderAdminListings(getFilteredProperties());
-            updateDashboardStats(allProperties);
-        }
-    });
-}
-
-function updateDashboardStats(props) {
-    document.getElementById('statTotal').innerText = props.length;
-    document.getElementById('statRent').innerText = props.filter(p => p.category === 'rent').length;
-    document.getElementById('statSell').innerText = props.filter(p => p.category === 'sell').length;
-    document.getElementById('statHotel').innerText = props.filter(p => p.category === 'hotel').length;
-}
-
-function filterAdminTable(cat) {
-    currentCategoryFilter = cat;
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    const activeTab = document.getElementById(`tab-${cat}`);
-    if (activeTab) activeTab.classList.add('active');
-    renderAdminListings(getFilteredProperties());
-}
-
-function getFilteredProperties() {
-    if (currentCategoryFilter === 'all') return allProperties;
-    return allProperties.filter(p => p.category === currentCategoryFilter);
-}
-
-function renderAdminListings(properties) {
-    const container = document.getElementById('adminPropertyList');
-    if (!container) return;
-    if (properties.length === 0) {
-        container.innerHTML = '<p style="padding: 20px; text-align:center;">No listings found in this category.</p>';
-        return;
-    }
-
-    let html = `
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    properties.forEach(item => {
-        html += `
-            <tr>
-                <td><img src="${item.img}" alt="thumb" style="width:50px; height:50px; object-fit:cover; border-radius:6px;"></td>
-                <td><strong>${item.title}</strong></td>
-                <td><span style="text-transform:uppercase; font-size:0.75rem; font-weight:bold; color:#4318ff;">${item.category}</span></td>
-                <td>BDT ${Number(item.price).toLocaleString()}</td>
-                <td>${item.location}</td>
-                <td>
-                    <button onclick="editProperty('${item.id}')" style="background:#4318ff; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; margin-right:5px;">
-                        <i class="fa-solid fa-pen-to-square"></i> Edit
-                    </button>
-                    <button onclick="deleteProperty('${item.id}')" style="background:#ff5b5b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-                        <i class="fa-solid fa-trash"></i> Delete
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-}
-
-function handlePropertySubmit(e) {
-    e.preventDefault();
-    const editId = document.getElementById('editPropertyId').value;
-    const propData = {
-        title: document.getElementById('pTitle').value,
-        category: document.getElementById('pCategory').value,
-        price: document.getElementById('pPrice').value,
-        location: document.getElementById('pLocation').value,
-        bed: document.getElementById('pBed').value || 'N/A',
-        img: document.getElementById('pImg').value
-    };
-
-    if (editId) {
-        db.ref('properties/' + editId).update(propData).then(() => {
-            alert('Property Updated Successfully!');
-            resetForm();
-        });
-    } else {
-        db.ref('properties').push(propData).then(() => {
-            alert('Property Published Successfully!');
-            resetForm();
-        });
-    }
-}
-
-function editProperty(id) {
-    const item = allProperties.find(p => p.id === id);
-    if (!item) return;
-
-    document.getElementById('editPropertyId').value = item.id;
-    document.getElementById('pTitle').value = item.title;
-    document.getElementById('pCategory').value = item.category;
-    document.getElementById('pPrice').value = item.price;
-    document.getElementById('pLocation').value = item.location;
-    document.getElementById('pBed').value = item.bed || '';
-    document.getElementById('pImg').value = item.img;
-
-    document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Property';
-    document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Property';
-    document.getElementById('cancelEditBtn').style.display = 'inline-block';
-}
-
-function resetForm() {
-    document.getElementById('editPropertyId').value = '';
-    document.getElementById('addPropertyForm').reset();
-    document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-circle-plus"></i> Add New Property';
-    document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing';
-    document.getElementById('cancelEditBtn').style.display = 'none';
-}
-
-function deleteProperty(id) {
-    if (confirm('Are you sure to delete this listing permanently?')) {
-        db.ref('properties/' + id).remove();
-    }
-}
-
-function saveSiteSettings(e) {
-    e.preventDefault();
-    const settings = {
-        phone: document.getElementById('settingPhone').value,
-        email: document.getElementById('settingEmail').value,
-        address: document.getElementById('settingAddress').value,
-        whatsapp: document.getElementById('settingWhatsapp').value
-    };
-    db.ref('siteSettings').set(settings).then(() => {
-        alert('Business Settings Updated!');
     });
 }
 
 function loadSiteSettings() {
     db.ref('siteSettings').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && document.getElementById('settingPhone')) {
-            document.getElementById('settingPhone').value = data.phone || '';
-            document.getElementById('settingEmail').value = data.email || '';
-            document.getElementById('settingAddress').value = data.address || '';
-            document.getElementById('settingWhatsapp').value = data.whatsapp || '';
+        if (data && data.whatsapp) {
+            whatsappNumber = data.whatsapp.replace(/[^0-9]/g, '');
         }
     });
 }
@@ -243,7 +131,7 @@ function renderListings(properties) {
     listContainer.innerHTML = '';
 
     if (properties.length === 0) {
-        listContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #707ebe;">No Properties Available At The Moment.</p>';
+        listContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No Properties Available.</p>';
         return;
     }
 
@@ -258,13 +146,27 @@ function renderListings(properties) {
                 <p><i class="fa-solid fa-location-dot"></i> ${item.location}</p>
                 <p><i class="fa-solid fa-bed"></i> ${item.bed || 'N/A'}</p>
                 <div class="price">BDT ${Number(item.price).toLocaleString()}</div>
-                <button class="book-btn" onclick="openBookingModal('${item.title}')">
-                    ${item.category === 'hotel' ? 'Book Room' : 'Inquire Now'}
+                <button class="book-btn" onclick="sendWhatsAppInquiry('${item.title}', '${item.price}', '${item.location}')">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
                 </button>
             </div>
         `;
         listContainer.appendChild(card);
     });
+}
+
+function sendWhatsAppInquiry(title, price, location) {
+    const currentUser = auth.currentUser;
+    const userName = currentUser ? (currentUser.displayName || currentUser.email) : "Guest User";
+
+    const text = `Hello Mahrim Properties! I am interested in this property:\n\n` +
+                 `📌 *Property:* ${title}\n` +
+                 `💰 *Price:* BDT ${price}\n` +
+                 `📍 *Location:* ${location}\n\n` +
+                 `👤 *Client Name:* ${userName}`;
+
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodedText}`, '_blank');
 }
 
 function filterProperties() {
@@ -280,19 +182,4 @@ function filterProperties() {
     });
 
     renderListings(filtered);
-}
-
-function openBookingModal(title) {
-    document.getElementById('modalTitle').innerText = "Inquire for: " + title;
-    document.getElementById('bookingModal').style.display = 'flex';
-}
-
-function closeModal() {
-    document.getElementById('bookingModal').style.display = 'none';
-}
-
-function handleBooking(e) {
-    e.preventDefault();
-    alert('Thank you! Your inquiry has been sent.');
-    closeModal();
 }
