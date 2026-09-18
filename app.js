@@ -1,4 +1,15 @@
-const propertiesData = [
+// Firebase Config Structure (Apnar Firebase Console theke credentials boshate hobe)
+const firebaseConfig = {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "tasnim-properties.firebaseapp.com",
+    projectId: "tasnim-properties",
+    storageBucket: "tasnim-properties.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Sample Database Array (Fallback/Primary Data)
+let propertiesData = [
     {
         id: "TP-101",
         title: "Luxury 3 Bedroom Apartment",
@@ -41,18 +52,22 @@ const propertiesData = [
 ];
 
 let savedItems = [];
+let currentSearchPurpose = 'buy';
 
-// Render Listing Cards
+// 1. Dynamic Rendering Engine
 function renderProperties(items) {
     const grid = document.getElementById('propertyGrid');
+    if (!grid) return;
+    
     grid.innerHTML = '';
 
     if (items.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-            <i class="fa-solid fa-building-circle-xmark" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
-            <h3>No Properties Found</h3>
-            <p>Try adjusting your search or filter options.</p>
-        </div>`;
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                <i class="fa-solid fa-building-circle-xmark" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+                <h3>No Properties Found</h3>
+                <p>Try resetting filters or changing location keywords.</p>
+            </div>`;
         return;
     }
 
@@ -78,7 +93,7 @@ function renderProperties(items) {
                         <span><i class="fa-solid fa-ruler-combined"></i> ${prop.sqft} sqft</span>
                     </div>
                     ${prop.isVerified ? `<div class="agent-verified-tag"><i class="fa-solid fa-circle-check"></i> Verified Agent ✓</div>` : ''}
-                    <button class="btn-view-prop" onclick="alert('Viewing property details for ${prop.title} (${prop.id})')">View Details</button>
+                    <button class="btn-view-prop" onclick="openPropertyDetails('${prop.id}')">View Details</button>
                 </div>
             </div>
         `;
@@ -86,9 +101,9 @@ function renderProperties(items) {
     });
 }
 
-// Toggle Heart/Saved Functionality
-function toggleSaveProperty(id, btn) {
-    const icon = btn.querySelector('i');
+// 2. Button Action: Heart / Save System
+function toggleSaveProperty(id, btnElement) {
+    const icon = btnElement.querySelector('i');
     if (savedItems.includes(id)) {
         savedItems = savedItems.filter(itemId => itemId !== id);
         icon.className = 'fa-regular fa-heart';
@@ -98,76 +113,100 @@ function toggleSaveProperty(id, btn) {
         icon.className = 'fa-solid fa-heart';
         icon.style.color = 'var(--error)';
     }
-    document.getElementById('savedCount').innerText = savedItems.length;
+    
+    const savedBadge = document.querySelector('.badge-count');
+    if (savedBadge) savedBadge.innerText = savedItems.length;
 }
 
-// Hero Search Filter
+// 3. Button Action: Hero Search Bar
 function applySearchFilter() {
-    const loc = document.getElementById('searchLocation').value.toLowerCase().trim();
-    const price = parseFloat(document.getElementById('searchPrice').value);
-    const type = document.getElementById('searchType').value.toLowerCase();
+    const locationInput = document.getElementById('searchLocation')?.value.toLowerCase().trim() || '';
+    const typeSelect = document.getElementById('searchType')?.value.toLowerCase() || 'all';
+    const maxPriceInput = parseFloat(document.getElementById('searchPrice')?.value) || Infinity;
 
     const filtered = propertiesData.filter(item => {
-        const matchLoc = !loc || item.location.toLowerCase().includes(loc);
-        const matchPrice = isNaN(price) || item.price <= price;
-        const matchType = type === 'all' || item.category.toLowerCase() === type;
-        return matchLoc && matchPrice && matchType;
+        const matchLocation = !locationInput || item.location.toLowerCase().includes(locationInput);
+        const matchType = typeSelect === 'all' || item.category.toLowerCase() === typeSelect;
+        const matchPrice = item.price <= maxPriceInput;
+        return matchLocation && matchType && matchPrice;
     });
 
     renderProperties(filtered);
 }
 
-// Nav Header Filter By Purpose
-function filterByPurpose(purpose, element) {
-    document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+// 4. Button Action: Search Tabs (Buy / Rent / Commercial / Hotels)
+function setSearchMode(mode, element) {
+    currentSearchPurpose = mode;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     if (element) element.classList.add('active');
 
-    const filtered = propertiesData.filter(item => item.purpose === purpose);
+    let filtered = propertiesData;
+    if (mode === 'buy') {
+        filtered = propertiesData.filter(i => i.purpose === 'FOR SALE');
+    } else if (mode === 'rent') {
+        filtered = propertiesData.filter(i => i.purpose === 'FOR RENT');
+    } else if (mode === 'commercial') {
+        filtered = propertiesData.filter(i => i.category.toLowerCase() === 'commercial');
+    }
     renderProperties(filtered);
 }
 
-// Category Card Filter
-function applyCategoryFilter(catName) {
-    const filtered = propertiesData.filter(item => item.category.toLowerCase() === catName.toLowerCase());
-    renderProperties(filtered.length ? filtered : propertiesData);
-    window.scrollTo({ top: 600, behavior: 'smooth' });
+// 5. Button Action: Categories Click Workflow
+function filterByCategory(categoryName) {
+    const filtered = propertiesData.filter(item => item.category.toLowerCase() === categoryName.toLowerCase());
+    renderProperties(filtered.length > 0 ? filtered : propertiesData);
+    
+    const listSection = document.querySelector('.main-container');
+    if (listSection) listSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Filter Drawer Toggle
+// 6. Button Action: Filter Drawer Controls
 function toggleFilterDrawer() {
     const drawer = document.getElementById('filterDrawer');
+    if (!drawer) return;
     drawer.style.display = (drawer.style.display === 'flex') ? 'none' : 'flex';
 }
 
-// Drawer Filter Actions
 function applyDrawerFilters() {
-    const minPrice = parseFloat(document.getElementById('drawerMinPrice').value) || 0;
-    const maxPrice = parseFloat(document.getElementById('drawerMaxPrice').value) || Infinity;
+    const minInput = parseFloat(document.querySelectorAll('.range-inputs input')[0]?.value) || 0;
+    const maxInput = parseFloat(document.querySelectorAll('.range-inputs input')[1]?.value) || Infinity;
 
-    const filtered = propertiesData.filter(item => item.price >= minPrice && item.price <= maxPrice);
+    const filtered = propertiesData.filter(item => item.price >= minInput && item.price <= maxInput);
     renderProperties(filtered);
     toggleFilterDrawer();
 }
 
-function resetFilters() {
-    document.getElementById('drawerMinPrice').value = '';
-    document.getElementById('drawerMaxPrice').value = '';
+function resetDrawerFilters() {
+    document.querySelectorAll('.range-inputs input').forEach(input => input.value = '');
     renderProperties(propertiesData);
     toggleFilterDrawer();
 }
 
-// Search Tab Selection
-function setSearchMode(mode, el) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
+// 7. Button Action: Details Trigger
+function openPropertyDetails(id) {
+    const property = propertiesData.find(p => p.id === id);
+    if (property) {
+        alert(`Property ID: ${property.id}\nTitle: ${property.title}\nPrice: ৳${property.price.toLocaleString('en-BD')}\nLocation: ${property.location}`);
+    }
 }
 
-function selectPill(btn) {
-    btn.parentElement.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-}
-
-// Initial Run
+// Event Bindings on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
     renderProperties(propertiesData);
+
+    // Bind Category Cards
+    const catCards = document.querySelectorAll('.cat-card');
+    catCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const catName = card.querySelector('h3')?.innerText;
+            if (catName) filterByCategory(catName);
+        });
+    });
+
+    // Drawer Buttons Binding
+    const drawerApplyBtn = document.querySelector('.drawer-footer .btn-primary');
+    if (drawerApplyBtn) drawerApplyBtn.onclick = applyDrawerFilters;
+
+    const drawerResetBtn = document.querySelector('.drawer-footer .btn-outline');
+    if (drawerResetBtn) drawerResetBtn.onclick = resetDrawerFilters;
 });
