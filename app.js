@@ -17,19 +17,77 @@ let allProperties = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchProperties();
+    loadSiteSettings();
 });
 
-// Admin Passkey Protection
+// Passkey Authorization Systems
 function checkAdminAuth() {
-    const pass = document.getElementById('adminPassKey').value;
-    if (pass === "admin123") {
-        document.getElementById('adminLoginModal').style.display = 'none';
-        document.getElementById('adminDashboard').style.display = 'block';
-    } else {
-        alert("Incorrect Access Code!");
-    }
+    const inputPass = document.getElementById('adminPassKey').value;
+    db.ref('adminSecurity/passkey').once('value', (snapshot) => {
+        const currentPass = snapshot.val() || "admin123";
+        if (inputPass === currentPass) {
+            document.getElementById('adminAuthModal').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+        } else {
+            alert("Incorrect Passkey! Please try again.");
+        }
+    });
 }
 
+function showForgotBox() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'block';
+}
+
+function showLoginBox() {
+    document.getElementById('forgotBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+}
+
+function resetPasskey() {
+    const ans = document.getElementById('securityAnswer').value.toLowerCase().trim();
+    const newPass = document.getElementById('newPassKey').value;
+
+    db.ref('adminSecurity/securityAnswer').once('value', (snapshot) => {
+        const correctAns = (snapshot.val() || "dhaka").toLowerCase();
+        if (ans === correctAns) {
+            if (!newPass) return alert("Please enter a new passkey");
+            db.ref('adminSecurity/passkey').set(newPass).then(() => {
+                alert("Passkey Reset Successful! Login with your new passkey.");
+                showLoginBox();
+            });
+        } else {
+            alert("Wrong Security Answer!");
+        }
+    });
+}
+
+function updatePasskey(e) {
+    e.preventDefault();
+    const curr = document.getElementById('currentPass').value;
+    const next = document.getElementById('changePass').value;
+
+    db.ref('adminSecurity/passkey').once('value', (snapshot) => {
+        const realPass = snapshot.val() || "admin123";
+        if (curr === realPass) {
+            db.ref('adminSecurity/passkey').set(next).then(() => {
+                alert("Security Passkey Updated Successfully!");
+                document.getElementById('currentPass').value = '';
+                document.getElementById('changePass').value = '';
+            });
+        } else {
+            alert("Current Passkey is Incorrect!");
+        }
+    });
+}
+
+function lockAdmin() {
+    document.getElementById('adminDashboard').style.display = 'none';
+    document.getElementById('adminAuthModal').style.display = 'flex';
+    document.getElementById('adminPassKey').value = '';
+}
+
+// Fetch and Render Properties & Stats
 function fetchProperties() {
     db.ref('properties').on('value', (snapshot) => {
         allProperties = [];
@@ -40,16 +98,114 @@ function fetchProperties() {
         renderListings(allProperties);
         if (document.getElementById('adminPropertyList')) {
             renderAdminListings(allProperties);
+            updateDashboardStats(allProperties);
         }
     });
 }
 
+function updateDashboardStats(props) {
+    document.getElementById('statTotal').innerText = props.length;
+    document.getElementById('statRent').innerText = props.filter(p => p.category === 'rent').length;
+    document.getElementById('statSell').innerText = props.filter(p => p.category === 'sell').length;
+    document.getElementById('statHotel').innerText = props.filter(p => p.category === 'hotel').length;
+}
+
+function renderAdminListings(properties) {
+    const container = document.getElementById('adminPropertyList');
+    if (properties.length === 0) {
+        container.innerHTML = '<p style="padding: 20px; text-align:center;">No active listings found.</p>';
+        return;
+    }
+
+    let html = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Location</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    properties.forEach(item => {
+        html += `
+            <tr>
+                <td><img src="${item.img}" alt="thumb"></td>
+                <td><strong>${item.title}</strong></td>
+                <td><span style="text-transform:uppercase; font-size:0.75rem; font-weight:bold; color:#4318ff;">${item.category}</span></td>
+                <td>BDT ${Number(item.price).toLocaleString()}</td>
+                <td>${item.location}</td>
+                <td>
+                    <button onclick="deleteProperty('${item.id}')" style="background:#ff5b5b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function addProperty(e) {
+    e.preventDefault();
+    const newProp = {
+        title: document.getElementById('pTitle').value,
+        category: document.getElementById('pCategory').value,
+        price: document.getElementById('pPrice').value,
+        location: document.getElementById('pLocation').value,
+        bed: document.getElementById('pBed').value || 'N/A',
+        img: document.getElementById('pImg').value
+    };
+
+    db.ref('properties').push(newProp).then(() => {
+        alert('Property Published Successfully!');
+        document.getElementById('addPropertyForm').reset();
+    });
+}
+
+function deleteProperty(id) {
+    if (confirm('Are you sure to delete this listing permanently?')) {
+        db.ref('properties/' + id).remove();
+    }
+}
+
+// Global Site Settings Handling
+function saveSiteSettings(e) {
+    e.preventDefault();
+    const settings = {
+        phone: document.getElementById('settingPhone').value,
+        email: document.getElementById('settingEmail').value,
+        address: document.getElementById('settingAddress').value
+    };
+    db.ref('siteSettings').set(settings).then(() => {
+        alert('Website Settings & Contact Info Updated!');
+    });
+}
+
+function loadSiteSettings() {
+    db.ref('siteSettings').once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && document.getElementById('settingPhone')) {
+            document.getElementById('settingPhone').value = data.phone || '';
+            document.getElementById('settingEmail').value = data.email || '';
+            document.getElementById('settingAddress').value = data.address || '';
+        }
+    });
+}
+
+// Public UI Rendering
 function renderListings(properties) {
     const listContainer = document.getElementById('propertyList');
     if (!listContainer) return;
-    
     listContainer.innerHTML = '';
-    
+
     if (properties.length === 0) {
         listContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #707ebe;">No Properties Available At The Moment.</p>';
         return;
@@ -88,47 +244,6 @@ function filterProperties() {
     });
 
     renderListings(filtered);
-}
-
-function addProperty(e) {
-    e.preventDefault();
-    const newProp = {
-        title: document.getElementById('pTitle').value,
-        category: document.getElementById('pCategory').value,
-        price: document.getElementById('pPrice').value,
-        location: document.getElementById('pLocation').value,
-        bed: document.getElementById('pBed').value || 'N/A',
-        img: document.getElementById('pImg').value
-    };
-
-    db.ref('properties').push(newProp).then(() => {
-        alert('Property Listed Successfully!');
-        document.getElementById('addPropertyForm').reset();
-    });
-}
-
-function renderAdminListings(properties) {
-    const container = document.getElementById('adminPropertyList');
-    container.innerHTML = '';
-
-    properties.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e0e5f2;';
-        itemDiv.innerHTML = `
-            <div>
-                <strong style="color:#1b2559;">${item.title}</strong>
-                <div style="font-size:0.8rem; color:#707ebe;">${item.category.toUpperCase()} - BDT ${item.price}</div>
-            </div>
-            <button onclick="deleteProperty('${item.id}')" style="background:#ff5b5b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Delete</button>
-        `;
-        container.appendChild(itemDiv);
-    });
-}
-
-function deleteProperty(id) {
-    if (confirm('Are you sure to delete this item?')) {
-        db.ref('properties/' + id).remove();
-    }
 }
 
 function openBookingModal(title) {
