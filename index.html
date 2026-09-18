@@ -3,181 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Admin Dashboard | Mahrim Properties</title>
+    <title>Mahrim Properties | Real Estate Platform</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="admin-body">
+<body>
 
-    <!-- Security Overlay Modal (Login / Recovery) -->
-    <div id="adminAuthModal" class="admin-login-overlay">
-        <div class="login-box" id="loginBox">
-            <div class="lock-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <h2>Admin Portal Access</h2>
-            <p>Enter passkey to manage platform</p>
-            <input type="password" id="adminPassKey" placeholder="Enter Passkey (Default: admin123)">
-            <button onclick="checkAdminAuth()" class="btn-primary"><i class="fa-solid fa-key"></i> Unlock Dashboard</button>
-            <div class="auth-links">
-                <a href="#" onclick="showForgotBox()">Forgot Passkey?</a>
+    <!-- Main Navigation Header -->
+    <header class="main-header" style="display:flex; justify-content:space-between; align-items:center; padding: 15px 30px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="logo" style="font-size: 1.4rem; font-weight:bold; color:#4318ff;"><i class="fa-solid fa-building-circle-check"></i> Mahrim Properties</div>
+        
+        <div id="authNavContainer">
+            <!-- Non-logged in State -->
+            <div id="guestNav">
+                <button onclick="openUserModal('login')" class="btn-secondary" style="padding: 8px 16px; margin-right: 8px; cursor:pointer;"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                <button onclick="openUserModal('signup')" class="btn-primary" style="padding: 8px 16px; cursor:pointer;"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+            </div>
+            <!-- Logged in State -->
+            <div id="userNav" style="display: none; align-items:center; gap:10px;">
+                <span id="userNameDisplay" style="font-weight: 600; color: #333;"></span>
+                <button onclick="handleUserLogout()" class="btn-danger" style="padding: 6px 12px; cursor:pointer; background:#ff5b5b; color:white; border:none; border-radius:6px;"><i class="fa-solid fa-power-off"></i> Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Unified User Auth Modal (Hidden by Default) -->
+    <div id="userAuthModal" class="admin-login-overlay" style="display: none;">
+        
+        <!-- LOGIN BOX -->
+        <div class="login-box" id="userLoginBox">
+            <div class="lock-icon"><i class="fa-solid fa-circle-user"></i></div>
+            <h2>User Login</h2>
+            <form onsubmit="handleEmailLogin(event)">
+                <input type="email" id="loginEmail" placeholder="Enter Email" required>
+                <input type="password" id="loginPass" placeholder="Enter Password" required>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+            </form>
+            
+            <div style="margin: 15px 0; border-bottom: 1px solid #eee; text-align: center; line-height: 0.1em;">
+                <span style="background:#fff; padding:0 10px; color:#888; font-size:0.8rem;">OR</span>
+            </div>
+
+            <!-- Social Logins -->
+            <button onclick="handleGoogleLogin()" style="width:100%; padding:10px; margin-bottom:8px; background:#4285F4; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                <i class="fa-brands fa-google"></i> Continue with Google
+            </button>
+            <button onclick="handleFacebookLogin()" style="width:100%; padding:10px; background:#1877F2; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                <i class="fa-brands fa-facebook-f"></i> Continue with Facebook
+            </button>
+
+            <div class="auth-links" style="margin-top:15px; text-align:center;">
+                Don't have an account? <a href="#" onclick="switchModal('signup')">Sign Up</a>
+                <br><br>
+                <a href="#" onclick="closeUserModal()" style="color:#888;">Close / Skip</a>
             </div>
         </div>
 
-        <div class="login-box" id="forgotBox" style="display: none;">
-            <div class="lock-icon"><i class="fa-solid fa-lock-open"></i></div>
-            <h2>Reset Passkey</h2>
-            <p>Answer your security question</p>
-            <p style="font-size: 0.85rem; color: #4318ff; margin-bottom: 10px;"><strong>Security Q:</strong> What is your favorite city?</p>
-            <input type="text" id="securityAnswer" placeholder="Enter Answer (Default: dhaka)">
-            <input type="password" id="newPassKey" placeholder="Enter New Passkey">
-            <button onclick="resetPasskey()" class="btn-primary"><i class="fa-solid fa-arrows-rotate"></i> Reset Passkey</button>
-            <div class="auth-links">
-                <a href="#" onclick="showLoginBox()">Back to Login</a>
+        <!-- SIGN UP BOX -->
+        <div class="login-box" id="userSignupBox" style="display: none;">
+            <div class="lock-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <h2>Create New Account</h2>
+            <form onsubmit="handleEmailSignup(event)">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Enter Email" required>
+                <input type="password" id="signupPass" placeholder="Create Password" required>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-user-check"></i> Register Account</button>
+            </form>
+
+            <div class="auth-links" style="margin-top:15px; text-align:center;">
+                Already have an account? <a href="#" onclick="switchModal('login')">Login</a>
+                <br><br>
+                <a href="#" onclick="closeUserModal()" style="color:#888;">Close / Skip</a>
             </div>
         </div>
+
     </div>
 
-    <!-- Admin Dashboard Main Layout -->
-    <div id="adminDashboard" class="admin-wrapper" style="display: none;">
-        <header class="admin-header">
-            <div class="admin-brand">
-                <i class="fa-solid fa-building-circle-check"></i>
-                <div>
-                    <h2>Mahrim Properties</h2>
-                    <span style="font-size: 0.8rem; opacity: 0.8;">Enterprise Management Console</span>
-                </div>
-            </div>
-            <div class="admin-actions">
-                <a href="index.html" class="btn-secondary" target="_blank"><i class="fa-solid fa-globe"></i> Live Website</a>
-                <button onclick="lockAdmin()" class="btn-danger"><i class="fa-solid fa-lock"></i> Lock Dashboard</button>
-            </div>
-        </header>
-
-        <!-- Dynamic Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #e9e3ff; color: #4318ff;"><i class="fa-solid fa-boxes-stacked"></i></div>
-                <div>
-                    <h3 id="statTotal">0</h3>
-                    <p>Total Listings</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #e6f9f0; color: #05cd99;"><i class="fa-solid fa-key"></i></div>
-                <div>
-                    <h3 id="statRent">0</h3>
-                    <p>Flats For Rent</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #fff6e5; color: #ffb800;"><i class="fa-solid fa-house-circle-check"></i></div>
-                <div>
-                    <h3 id="statSell">0</h3>
-                    <p>Flats For Sale</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #ffe5e5; color: #ff5b5b;"><i class="fa-solid fa-hotel"></i></div>
-                <div>
-                    <h3 id="statHotel">0</h3>
-                    <p>Hotel Rooms</p>
-                </div>
-            </div>
+    <!-- Search & Filter Bar -->
+    <section class="filter-section" style="padding: 20px;">
+        <div class="filter-container">
+            <select id="filterCategory" onchange="filterProperties()">
+                <option value="all">All Categories</option>
+                <option value="rent">Flat Rent</option>
+                <option value="sell">Flat Sell</option>
+                <option value="hotel">Hotel Room</option>
+            </select>
+            <input type="text" id="filterLocation" oninput="filterProperties()" placeholder="Search location...">
+            <input type="number" id="filterPrice" oninput="filterProperties()" placeholder="Max Budget (BDT)">
         </div>
+    </section>
 
-        <div class="admin-grid">
-            <!-- Add Property Form -->
-            <div class="admin-card">
-                <h3><i class="fa-solid fa-circle-plus"></i> Add New Property</h3>
-                <form id="addPropertyForm" onsubmit="addProperty(event)">
-                    <div class="form-group">
-                        <label>Property Title</label>
-                        <input type="text" id="pTitle" placeholder="e.g. 3BHK Luxury Apartment in Banani" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Category</label>
-                            <select id="pCategory" required>
-                                <option value="rent">Flat Rent</option>
-                                <option value="sell">Flat Sell</option>
-                                <option value="hotel">Hotel Room</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Price (BDT)</label>
-                            <input type="number" id="pPrice" placeholder="65000" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Location</label>
-                            <input type="text" id="pLocation" placeholder="Banani Block C, Dhaka" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Bedrooms / Suite Type</label>
-                            <input type="text" id="pBed" placeholder="3 Beds / Executive Suite">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Image Direct Link (URL)</label>
-                        <input type="url" id="pImg" placeholder="https://images.unsplash.com/photo-..." required>
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing</button>
-                </form>
-            </div>
-
-            <!-- Settings & Manage -->
-            <div class="admin-card-stack">
-                <!-- Site Settings Form -->
-                <div class="admin-card">
-                    <h3><i class="fa-solid fa-gears"></i> Website Contact & Security Settings</h3>
-                    <form onsubmit="saveSiteSettings(event)">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Official Phone Number</label>
-                                <input type="text" id="settingPhone" placeholder="+880 1700-000000">
-                            </div>
-                            <div class="form-group">
-                                <label>Official Email Address</label>
-                                <input type="email" id="settingEmail" placeholder="info@mahrimproperties.com">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Office Address</label>
-                            <input type="text" id="settingAddress" placeholder="Gulshan-2, Dhaka, Bangladesh">
-                        </div>
-                        <button type="submit" class="btn-secondary-btn"><i class="fa-solid fa-floppy-disk"></i> Update Public Info</button>
-                    </form>
-                </div>
-
-                <!-- Passkey Change -->
-                <div class="admin-card">
-                    <h3><i class="fa-solid fa-key"></i> Security Settings</h3>
-                    <form onsubmit="updatePasskey(event)">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Current Passkey</label>
-                                <input type="password" id="currentPass" required>
-                            </div>
-                            <div class="form-group">
-                                <label>New Passkey</label>
-                                <input type="password" id="changePass" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-warning"><i class="fa-solid fa-lock-rotate"></i> Change Security Passkey</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Property List Management Table -->
-        <div class="admin-card full-width">
-            <h3><i class="fa-solid fa-list-check"></i> Manage Active Properties</h3>
-            <div id="adminPropertyList" class="manage-table-container"></div>
-        </div>
-    </div>
+    <!-- Property Listings -->
+    <main class="property-grid" id="propertyList"></main>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="app.js"></script>
 </body>
