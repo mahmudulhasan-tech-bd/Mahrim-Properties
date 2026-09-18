@@ -1,139 +1,88 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Client Dashboard | Mahrim Properties</title>
+    <title>Admin Dashboard | Mahrim Properties</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="admin-body">
+<body>
 
-    <!-- Auth Modal -->
-    <div id="adminAuthModal" class="admin-login-overlay">
-        <div class="login-box" id="loginBox">
-            <div class="lock-icon"><i class="fa-solid fa-user-shield"></i></div>
-            <h2>Admin Portal Access</h2>
-            <p>Login with your credentials</p>
-            <form onsubmit="handleEmailLogin(event)">
-                <input type="email" id="adminEmail" placeholder="Enter Admin Email" required>
-                <input type="password" id="adminPassword" placeholder="Enter Password" required>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard</button>
-            </form>
-            <div class="auth-links">
-                <a href="#" onclick="showForgotBox()">Forgot Password?</a>
-            </div>
+    <!-- Top Admin Header -->
+    <header class="main-header">
+        <div class="logo">
+            <i class="fa-solid fa-building-circle-check"></i>
+            <span>Mahrim Properties <small style="font-size: 0.8rem; color: #6366f1;">[Admin Control]</small></span>
         </div>
+        <a href="index.html" class="btn-glow-secondary"><i class="fa-solid fa-eye"></i> View Live Site</a>
+    </header>
 
-        <div class="login-box" id="forgotBox" style="display: none;">
-            <div class="lock-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
-            <h2>Password Recovery</h2>
-            <p>A reset link will be sent to your email</p>
-            <form onsubmit="handleForgotPassword(event)">
-                <input type="email" id="resetEmail" placeholder="Enter Registered Email" required>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Recovery Link</button>
-            </form>
-            <div class="auth-links">
-                <a href="#" onclick="showLoginBox()">Back to Login</a>
+    <main class="main-container">
+        <!-- Admin Form Card -->
+        <div class="admin-card">
+            <div class="section-header">
+                <h2>Add New Property Listing</h2>
+                <div class="glow-line"></div>
             </div>
-        </div>
-    </div>
 
-    <!-- Admin Dashboard -->
-    <div id="adminDashboard" class="admin-wrapper" style="display: none;">
-        <header class="admin-header">
-            <div class="admin-brand">
-                <i class="fa-solid fa-building-circle-check"></i>
-                <div>
-                    <h2>Mahrim Properties</h2>
-                    <span style="font-size: 0.8rem; opacity: 0.8;" id="loggedInUserText">Owner Control Panel</span>
+            <form id="addPropertyForm" onsubmit="handlePropertySubmit(event)">
+                <div class="admin-form-grid">
+                    <div class="field-group">
+                        <i class="fa-solid fa-heading"></i>
+                        <input type="text" id="propTitle" placeholder="Property Title (e.g. Luxury Penthouse)" required>
+                    </div>
+
+                    <div class="field-group">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <select id="propCategory" required>
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="rent">Flat Rent</option>
+                            <option value="sell">Flat Sell</option>
+                            <option value="hotel">Hotel Room</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" id="propLocation" placeholder="Location (e.g. Uttara, Dhaka)" required>
+                    </div>
+
+                    <div class="field-group">
+                        <i class="fa-solid fa-tag"></i>
+                        <input type="number" id="propPrice" placeholder="Price (BDT)" required>
+                    </div>
+
+                    <div class="field-group">
+                        <i class="fa-solid fa-image"></i>
+                        <input type="url" id="propImage" placeholder="Image Direct URL (e.g. Unsplash/ImgBB)" required>
+                    </div>
+
+                    <div class="field-group">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <input type="text" id="propWhatsapp" placeholder="WhatsApp Number (e.g. 8801700000000)" required>
+                    </div>
                 </div>
-            </div>
-            <div class="admin-actions">
-                <a href="index.html" class="btn-secondary" target="_blank"><i class="fa-solid fa-globe"></i> View Website</a>
-                <button onclick="handleLogout()" class="btn-danger"><i class="fa-solid fa-power-off"></i> Logout</button>
-            </div>
-        </header>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card" onclick="filterAdminTable('all')" style="cursor:pointer;">
-                <div class="stat-icon" style="background: #e9e3ff; color: #4318ff;"><i class="fa-solid fa-boxes-stacked"></i></div>
-                <div><h3 id="statTotal">0</h3><p>Total Listings</p></div>
-            </div>
-            <div class="stat-card" onclick="filterAdminTable('rent')" style="cursor:pointer;">
-                <div class="stat-icon" style="background: #e6f9f0; color: #05cd99;"><i class="fa-solid fa-key"></i></div>
-                <div><h3 id="statRent">0</h3><p>Flats For Rent</p></div>
-            </div>
-            <div class="stat-card" onclick="filterAdminTable('sell')" style="cursor:pointer;">
-                <div class="stat-icon" style="background: #fff6e5; color: #ffb800;"><i class="fa-solid fa-house-circle-check"></i></div>
-                <div><h3 id="statSell">0</h3><p>Flats For Sale</p></div>
-            </div>
-            <div class="stat-card" onclick="filterAdminTable('hotel')" style="cursor:pointer;">
-                <div class="stat-icon" style="background: #ffe5e5; color: #ff5b5b;"><i class="fa-solid fa-hotel"></i></div>
-                <div><h3 id="statHotel">0</h3><p>Hotel Rooms</p></div>
-            </div>
+                <button type="submit" class="btn-glow-primary full-width" style="margin-top: 15px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Publish Property
+                </button>
+            </form>
         </div>
 
-        <div class="admin-grid">
-            <!-- Add/Edit Form -->
-            <div class="admin-card">
-                <h3 id="formTitle"><i class="fa-solid fa-circle-plus"></i> Add New Property</h3>
-                <form id="addPropertyForm" onsubmit="handlePropertySubmit(event)">
-                    <input type="hidden" id="editPropertyId" value="">
-                    <div class="form-group"><label>Property Title</label><input type="text" id="pTitle" placeholder="e.g. Luxury 3BHK Apartment" required></div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Category</label>
-                            <select id="pCategory" required>
-                                <option value="rent">Flat Rent</option>
-                                <option value="sell">Flat Sell</option>
-                                <option value="hotel">Hotel Room</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Price (BDT)</label><input type="number" id="pPrice" placeholder="50000" required></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Location</label><input type="text" id="pLocation" placeholder="Gulshan-2, Dhaka" required></div>
-                        <div class="form-group"><label>Bedrooms / Type</label><input type="text" id="pBed" placeholder="3 Beds"></div>
-                    </div>
-                    <div class="form-group"><label>Image Direct Link (URL)</label><input type="url" id="pImg" placeholder="https://..." required></div>
-                    <div style="display:flex; gap:10px;">
-                        <button type="submit" id="submitBtn" class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing</button>
-                        <button type="button" id="cancelEditBtn" onclick="resetForm()" class="btn-secondary" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Business Settings -->
-            <div class="admin-card">
-                <h3><i class="fa-solid fa-sliders"></i> Complete Business Setup</h3>
-                <form onsubmit="saveSiteSettings(event)">
-                    <div class="form-group"><label>Business Phone Number</label><input type="text" id="settingPhone" placeholder="+880 1700-000000" required></div>
-                    <div class="form-group"><label>Business Email Address</label><input type="email" id="settingEmail" placeholder="contact@mahrimproperties.com" required></div>
-                    <div class="form-group"><label>Office Address</label><input type="text" id="settingAddress" placeholder="Gulshan Avenue, Dhaka" required></div>
-                    <div class="form-group"><label>WhatsApp Number</label><input type="text" id="settingWhatsapp" placeholder="+880 1700-000000"></div>
-                    <button type="submit" class="btn-secondary-btn"><i class="fa-solid fa-floppy-disk"></i> Update Business Info</button>
-                </form>
-            </div>
+        <!-- Property List Management -->
+        <div class="section-header" style="margin-top: 50px;">
+            <h2>Manage Live Listings</h2>
+            <div class="glow-line"></div>
         </div>
 
-        <!-- Category Wise Table -->
-        <div class="admin-card full-width">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-                <h3><i class="fa-solid fa-list-check"></i> Manage Active Properties</h3>
-                <div class="category-tabs" style="display:flex; gap:8px;">
-                    <button onclick="filterAdminTable('all')" class="tab-btn active" id="tab-all">All</button>
-                    <button onclick="filterAdminTable('rent')" class="tab-btn" id="tab-rent">Flat Rent</button>
-                    <button onclick="filterAdminTable('sell')" class="tab-btn" id="tab-sell">Flat Sell</button>
-                    <button onclick="filterAdminTable('hotel')" class="tab-btn" id="tab-hotel">Hotel Room</button>
-                </div>
-            </div>
-            <div id="adminPropertyList" class="manage-table-container"></div>
+        <div class="property-grid" id="adminPropertyList">
+            <!-- Dynamic Items Added From Firebase -->
         </div>
-    </div>
+    </main>
 
+    <!-- Firebase System Script Links -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
