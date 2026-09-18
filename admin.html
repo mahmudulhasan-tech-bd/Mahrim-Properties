@@ -3,173 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — TASNIM PROPERTIES</title>
-    <link rel="stylesheet" href="admin-style.css">
+    <title>TASNIM PROPERTIES — Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="admin-body">
 
-    <div class="admin-wrapper">
-        <!-- 45. Admin Sidebar UI -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-brand">
-                <div class="logo-icon">T</div>
-                <div class="logo-text">
-                    <span class="brand-name">TASNIM</span>
-                    <span class="brand-sub">ADMIN</span>
-                </div>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="logo">
+            <div class="logo-icon">T</div>
+            <div class="logo-text">
+                <span class="brand-name">TASNIM</span>
+                <span class="brand-sub">ADMIN</span>
             </div>
+        </div>
+        <div class="admin-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalAdminSearch" placeholder="Search system properties, users, agents..." onkeyup="filterAdminTable()">
+        </div>
+        <div class="admin-profile">
+            <i class="fa-regular fa-bell"></i>
+            <div class="user-avatar">
+                <img src="https://i.pravatar.cc/100?img=12" alt="Admin">
+                <span>Mahmud (Admin)</span>
+            </div>
+        </div>
+    </header>
 
-            <nav class="sidebar-menu">
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
                 <a href="#" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-
                 <div class="menu-label">MANAGEMENT</div>
                 <a href="#" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
                 <a href="#" class="nav-item"><i class="fa-solid fa-user-tie"></i> Agents</a>
                 <a href="#" class="nav-item"><i class="fa-solid fa-building"></i> Properties</a>
                 <a href="#" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
                 <a href="#" class="nav-item"><i class="fa-solid fa-diagram-project"></i> Projects</a>
-
                 <div class="menu-label">TRANSACTIONS</div>
                 <a href="#" class="nav-item"><i class="fa-regular fa-envelope"></i> Inquiries</a>
                 <a href="#" class="nav-item"><i class="fa-regular fa-calendar-check"></i> Appointments</a>
-                <a href="#" class="nav-item"><i class="fa-solid fa-credit-card"></i> Bookings & Payments</a>
-
+                <a href="#" class="nav-item"><i class="fa-regular fa-credit-card"></i> Bookings & Payments</a>
                 <div class="menu-label">SYSTEM</div>
-                <a href="#" class="nav-item"><i class="fa-solid fa-sliders"></i> Settings</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
                 <a href="#" class="nav-item"><i class="fa-solid fa-list-check"></i> Admin Logs</a>
-            </nav>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
         <main class="admin-main">
-            <!-- Top Header Bar -->
-            <header class="admin-header">
-                <div class="header-search">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search system properties, users, agents...">
-                </div>
-                <div class="header-profile">
-                    <button class="btn-icon"><i class="fa-regular fa-bell"></i></button>
-                    <div class="user-avatar">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Admin">
-                        <span>Mahmud (Admin)</span>
-                    </div>
-                </div>
-            </header>
+            <div class="page-header">
+                <h1 id="adminPageTitle">Admin Dashboard Overview</h1>
+                <p>Real-time system health and listing verification requests</p>
+            </div>
 
-            <div class="admin-content">
-                <div class="page-title-wrap">
-                    <h2>Admin Dashboard Overview</h2>
-                    <p>Real-time system health and listing verification requests</p>
+            <!-- Stats Overview Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-users"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <small>Total Users</small>
+                        <h2 id="statTotalUsers">8,540</h2>
+                    </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-properties"><i class="fa-solid fa-building"></i></div>
+                    <div>
+                        <small>Properties</small>
+                        <h2 id="statTotalProps">1,245</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-agents"><i class="fa-solid fa-user-tie"></i></div>
+                    <div>
+                        <small>Active Agents</small>
+                        <h2 id="statTotalAgents">320</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-pending"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <small>Pending Approval</small>
+                        <h2 id="statPendingCount">14</h2>
+                    </div>
+                </div>
+            </div>
 
-                <!-- 47. Admin Dashboard KPI Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-navy"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Total Users</span>
-                            <h3 class="stat-value">8,540</h3>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-gold"><i class="fa-solid fa-building"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Properties</span>
-                            <h3 class="stat-value">1,245</h3>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-navy"><i class="fa-solid fa-user-tie"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Active Agents</span>
-                            <h3 class="stat-value">320</h3>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-green"><i class="fa-solid fa-circle-check"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Pending Approval</span>
-                            <h3 class="stat-value">14</h3>
-                        </div>
+            <!-- Data Table Section -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 id="tableSectionTitle">Property Review Queue</h3>
+                    <div class="table-actions">
+                        <input type="text" id="adminTableSearch" placeholder="Filter by owner or title..." onkeyup="filterAdminTable()">
+                        <button class="btn-filter" onclick="filterAdminTable()"><i class="fa-solid fa-filter"></i> Filter</button>
                     </div>
                 </div>
 
-                <!-- 46. Admin Table UI for Managing Listings -->
-                <div class="table-card">
-                    <div class="table-header">
-                        <h3>Property Review Queue</h3>
-                        <div class="table-actions">
-                            <input type="text" id="adminTableSearch" placeholder="Filter by owner or title..." onkeyup="filterAdminTable()">
-                            <button class="btn-primary-sm"><i class="fa-solid fa-filter"></i> Filter</button>
-                        </div>
-                    </div>
-
-                    <div class="table-wrapper">
-                        <table class="admin-table" id="adminPropertyTable">
-                            <thead>
-                                <tr>
-                                    <th>Property</th>
-                                    <th>Owner / Agent</th>
-                                    <th>Price (BDT)</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="prop-col">
-                                        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=100&q=80" alt="Prop">
-                                        <div>
-                                            <strong>Luxury 3 Bedroom Apartment</strong>
-                                            <small>Uttara Sector 10, Dhaka</small>
-                                        </div>
-                                    </td>
-                                    <td>Agent Mahmud</td>
-                                    <td>৳ 1,25,00,000</td>
-                                    <td><span class="badge status-approved">Approved</span></td>
-                                    <td class="action-col">
-                                        <button class="btn-action" onclick="toggleDropdown(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                                        <div class="action-dropdown">
-                                            <a href="#"><i class="fa-regular fa-eye"></i> View</a>
-                                            <a href="#"><i class="fa-solid fa-check"></i> Approve</a>
-                                            <a href="#"><i class="fa-solid fa-xmark"></i> Reject</a>
-                                            <a href="#" class="text-danger"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="prop-col">
-                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=100&q=80" alt="Prop">
-                                        <div>
-                                            <strong>Modern Duplex Penthouse</strong>
-                                            <small>Gulshan 2, Dhaka</small>
-                                        </div>
-                                    </td>
-                                    <td>Kazi Rahman</td>
-                                    <td>৳ 3,80,00,000</td>
-                                    <td><span class="badge status-pending">Pending</span></td>
-                                    <td class="action-col">
-                                        <button class="btn-action" onclick="toggleDropdown(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                                        <div class="action-dropdown">
-                                            <a href="#"><i class="fa-regular fa-eye"></i> View</a>
-                                            <a href="#"><i class="fa-solid fa-check"></i> Approve</a>
-                                            <a href="#"><i class="fa-solid fa-xmark"></i> Reject</a>
-                                            <a href="#" class="text-danger"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="admin-table" id="adminMainTable">
+                        <thead>
+                            <tr id="tableHeadRow">
+                                <th>PROPERTY</th>
+                                <th>OWNER / AGENT</th>
+                                <th>PRICE (BDT)</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- JS Dynamic Content -->
+                        </tbody>
+                    </table>
                 </div>
-
             </div>
         </main>
     </div>
 
+    <!-- Firebase SDK Imports -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="admin-app.js"></script>
 </body>
 </html>
