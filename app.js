@@ -16,6 +16,7 @@ if (!firebase.apps.length) {
 const db = firebase.database();
 const auth = firebase.auth();
 let allProperties = [];
+let currentCategoryFilter = 'all';
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchProperties();
@@ -43,12 +44,8 @@ function handleEmailLogin(e) {
     const pass = document.getElementById('adminPassword').value;
 
     auth.signInWithEmailAndPassword(email, pass)
-        .then(() => {
-            alert("Login Successful!");
-        })
-        .catch((error) => {
-            alert("Login Failed: " + error.message);
-        });
+        .then(() => alert("Login Successful!"))
+        .catch((error) => alert("Login Failed: " + error.message));
 }
 
 function handleForgotPassword(e) {
@@ -57,18 +54,14 @@ function handleForgotPassword(e) {
 
     auth.sendPasswordResetEmail(email)
         .then(() => {
-            alert("Password Reset Link sent to your Email! Please check inbox/spam folder.");
+            alert("Password Reset Link sent to your Email!");
             showLoginBox();
         })
-        .catch((error) => {
-            alert("Error: " + error.message);
-        });
+        .catch((error) => alert("Error: " + error.message));
 }
 
 function handleLogout() {
-    auth.signOut().then(() => {
-        alert("Logged Out Successfully.");
-    });
+    auth.signOut().then(() => alert("Logged Out Successfully."));
 }
 
 function showForgotBox() {
@@ -90,7 +83,7 @@ function fetchProperties() {
         }
         renderListings(allProperties);
         if (document.getElementById('adminPropertyList')) {
-            renderAdminListings(allProperties);
+            renderAdminListings(getFilteredProperties());
             updateDashboardStats(allProperties);
         }
     });
@@ -103,11 +96,24 @@ function updateDashboardStats(props) {
     document.getElementById('statHotel').innerText = props.filter(p => p.category === 'hotel').length;
 }
 
+function filterAdminTable(cat) {
+    currentCategoryFilter = cat;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    const activeTab = document.getElementById(`tab-${cat}`);
+    if (activeTab) activeTab.classList.add('active');
+    renderAdminListings(getFilteredProperties());
+}
+
+function getFilteredProperties() {
+    if (currentCategoryFilter === 'all') return allProperties;
+    return allProperties.filter(p => p.category === currentCategoryFilter);
+}
+
 function renderAdminListings(properties) {
     const container = document.getElementById('adminPropertyList');
     if (!container) return;
     if (properties.length === 0) {
-        container.innerHTML = '<p style="padding: 20px; text-align:center;">No active listings found.</p>';
+        container.innerHTML = '<p style="padding: 20px; text-align:center;">No listings found in this category.</p>';
         return;
     }
 
@@ -120,7 +126,7 @@ function renderAdminListings(properties) {
                     <th>Category</th>
                     <th>Price</th>
                     <th>Location</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -129,12 +135,15 @@ function renderAdminListings(properties) {
     properties.forEach(item => {
         html += `
             <tr>
-                <td><img src="${item.img}" alt="thumb"></td>
+                <td><img src="${item.img}" alt="thumb" style="width:50px; height:50px; object-fit:cover; border-radius:6px;"></td>
                 <td><strong>${item.title}</strong></td>
                 <td><span style="text-transform:uppercase; font-size:0.75rem; font-weight:bold; color:#4318ff;">${item.category}</span></td>
                 <td>BDT ${Number(item.price).toLocaleString()}</td>
                 <td>${item.location}</td>
                 <td>
+                    <button onclick="editProperty('${item.id}')" style="background:#4318ff; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; margin-right:5px;">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                    </button>
                     <button onclick="deleteProperty('${item.id}')" style="background:#ff5b5b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
                         <i class="fa-solid fa-trash"></i> Delete
                     </button>
@@ -147,9 +156,10 @@ function renderAdminListings(properties) {
     container.innerHTML = html;
 }
 
-function addProperty(e) {
+function handlePropertySubmit(e) {
     e.preventDefault();
-    const newProp = {
+    const editId = document.getElementById('editPropertyId').value;
+    const propData = {
         title: document.getElementById('pTitle').value,
         category: document.getElementById('pCategory').value,
         price: document.getElementById('pPrice').value,
@@ -158,10 +168,42 @@ function addProperty(e) {
         img: document.getElementById('pImg').value
     };
 
-    db.ref('properties').push(newProp).then(() => {
-        alert('Property Published Successfully!');
-        document.getElementById('addPropertyForm').reset();
-    });
+    if (editId) {
+        db.ref('properties/' + editId).update(propData).then(() => {
+            alert('Property Updated Successfully!');
+            resetForm();
+        });
+    } else {
+        db.ref('properties').push(propData).then(() => {
+            alert('Property Published Successfully!');
+            resetForm();
+        });
+    }
+}
+
+function editProperty(id) {
+    const item = allProperties.find(p => p.id === id);
+    if (!item) return;
+
+    document.getElementById('editPropertyId').value = item.id;
+    document.getElementById('pTitle').value = item.title;
+    document.getElementById('pCategory').value = item.category;
+    document.getElementById('pPrice').value = item.price;
+    document.getElementById('pLocation').value = item.location;
+    document.getElementById('pBed').value = item.bed || '';
+    document.getElementById('pImg').value = item.img;
+
+    document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Property';
+    document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Property';
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+}
+
+function resetForm() {
+    document.getElementById('editPropertyId').value = '';
+    document.getElementById('addPropertyForm').reset();
+    document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-circle-plus"></i> Add New Property';
+    document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing';
+    document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
 function deleteProperty(id) {
@@ -179,20 +221,18 @@ function saveSiteSettings(e) {
         whatsapp: document.getElementById('settingWhatsapp').value
     };
     db.ref('siteSettings').set(settings).then(() => {
-        alert('Business Settings & Contact Details Successfully Updated!');
+        alert('Business Settings Updated!');
     });
 }
 
 function loadSiteSettings() {
     db.ref('siteSettings').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
-            if (document.getElementById('settingPhone')) {
-                document.getElementById('settingPhone').value = data.phone || '';
-                document.getElementById('settingEmail').value = data.email || '';
-                document.getElementById('settingAddress').value = data.address || '';
-                document.getElementById('settingWhatsapp').value = data.whatsapp || '';
-            }
+        if (data && document.getElementById('settingPhone')) {
+            document.getElementById('settingPhone').value = data.phone || '';
+            document.getElementById('settingEmail').value = data.email || '';
+            document.getElementById('settingAddress').value = data.address || '';
+            document.getElementById('settingWhatsapp').value = data.whatsapp || '';
         }
     });
 }
