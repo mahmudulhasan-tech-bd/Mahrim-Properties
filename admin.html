@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | PrimeHaven</title>
+    <title>Admin Dashboard | Mahrim Properties</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
-    <div class="admin-container">
-        <h2><i class="fa-solid fa-sliders"></i> Property & Hotel Management Panel</h2>
-        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Main Website-e Phire Jao</a>
 
-        <!-- Add Property Form -->
-        <div class="card form-card">
-            <h3>Add New Listing</h3>
-            <form id="addPropertyForm" onsubmit="addProperty(event)">
-                <div class="form-grid">
-                    <div>
-                        <label>Title</label>
-                        <input type="text" id="pTitle" placeholder="e.g. 3 BHK Luxury Apartment" required>
-                    </div>
-                    <div>
-                        <label>Category</label>
-                        <select id="pCategory" required>
-                            <option value="rent">Flat Rent</option>
-                            <option value="sell">Flat Sell</option>
-                            <option value="hotel">Hotel Room</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Price (BDT)</label>
-                        <input type="number" id="pPrice" placeholder="e.g. 25000" required>
-                    </div>
-                    <div>
-                        <label>Location</label>
-                        <input type="text" id="pLocation" placeholder="e.g. Dhanmondi, Dhaka" required>
-                    </div>
-                    <div>
-                        <label>Bedrooms / Type</label>
-                        <input type="text" id="pBed" placeholder="e.g. 3 Bed / Deluxe Room">
-                    </div>
-                    <div>
-                        <label>Image URL</label>
-                        <input type="url" id="pImg" placeholder="https://example.com/image.jpg" required>
-                    </div>
-                </div>
-                <div style="margin-top: 15px;">
-                    <label>Description</label>
-                    <textarea id="pDesc" rows="3" placeholder="Full Details..."></textarea>
-                </div>
-                <button type="submit" class="add-btn"><i class="fa-solid fa-plus"></i> Save Listing</button>
-            </form>
+    <!-- Auth Protection -->
+    <div id="adminLoginModal" class="admin-login-overlay">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <p>Enter Access Key to manage database</p>
+            <input type="password" id="adminPassKey" placeholder="Enter Access Code">
+            <button onclick="checkAdminAuth()" class="btn-primary">Unlock Panel</button>
         </div>
+    </div>
 
-        <!-- Manage Existing Listings -->
-        <div class="card">
-            <h3>Manage Existing Properties</h3>
-            <div id="adminPropertyList" class="admin-grid">
-                <!-- Loaded dynamically -->
+    <div id="adminDashboard" class="admin-wrapper" style="display: none;">
+        <header class="admin-header">
+            <h2><i class="fa-solid fa-sliders"></i> Admin Control Panel</h2>
+            <a href="index.html" class="btn-logout"><i class="fa-solid fa-globe"></i> View Website</a>
+        </header>
+
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h3>Add New Property</h3>
+                <form id="addPropertyForm" onsubmit="addProperty(event)">
+                    <div class="form-group">
+                        <label>Property Title</label>
+                        <input type="text" id="pTitle" placeholder="e.g. Luxury 3BHK Flat in Gulshan" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="pCategory" required>
+                                <option value="rent">Flat Rent</option>
+                                <option value="sell">Flat Sell</option>
+                                <option value="hotel">Hotel Room</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (BDT)</label>
+                            <input type="number" id="pPrice" placeholder="50000" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="pLocation" placeholder="Gulshan-2, Dhaka" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Bedrooms / Type</label>
+                            <input type="text" id="pBed" placeholder="3 Beds / Deluxe Suite">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Image Direct Link (URL)</label>
+                        <input type="url" id="pImg" placeholder="https://images.unsplash.com/..." required>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Publish Property</button>
+                </form>
+            </div>
+
+            <div class="admin-card">
+                <h3>Active Properties</h3>
+                <div id="adminPropertyList" class="manage-list"></div>
             </div>
         </div>
     </div>
