@@ -1,15 +1,16 @@
-// 1. Firebase Configuration (Apnar Firebase Console theke credentials bosaai deben)
+// Firebase Configuration (Mahrim Properties)
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-app.firebaseapp.com",
-    databaseURL: "https://your-app-default-rtdb.firebaseio.com",
-    projectId: "your-app",
-    storageBucket: "your-app.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyC9-OCF3L9yTL-yN9m9IpRBtkRK_T4u-Y8",
+    authDomain: "mahrim-properties.firebaseapp.com",
+    databaseURL: "https://mahrim-properties-default-rtdb.firebaseio.com",
+    projectId: "mahrim-properties",
+    storageBucket: "mahrim-properties.firebasestorage.app",
+    messagingSenderId: "1091253349290",
+    appId: "1:1091253349290:web:b4465b36a691c702f559d3",
+    measurementId: "G-E4RMTTT2XY"
 };
 
-// Firebase Init
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -46,7 +47,7 @@ function renderListings(properties) {
     listContainer.innerHTML = '';
     
     if (properties.length === 0) {
-        listContainer.innerHTML = '<p>Kono Property Paowa Jayni.</p>';
+        listContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Kono Property Paowa Jayni.</p>';
         return;
     }
 
@@ -95,14 +96,16 @@ function addProperty(e) {
         category: document.getElementById('pCategory').value,
         price: document.getElementById('pPrice').value,
         location: document.getElementById('pLocation').value,
-        bed: document.getElementById('pBed').value,
+        bed: document.getElementById('pBed').value || 'N/A',
         img: document.getElementById('pImg').value,
-        desc: document.getElementById('pDesc').value
+        desc: document.getElementById('pDesc').value || ''
     };
 
     db.ref('properties').push(newProp).then(() => {
         alert('Property Successfull vabe Add Hoyeche!');
         document.getElementById('addPropertyForm').reset();
+    }).catch(error => {
+        alert('Error: ' + error.message);
     });
 }
 
