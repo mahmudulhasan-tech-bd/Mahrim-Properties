@@ -3,37 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Mahrim Properties</title>
+    <title>Enterprise Client Dashboard | Mahrim Properties</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
 
-    <!-- Auth Protection -->
-    <div id="adminLoginModal" class="admin-login-overlay">
-        <div class="login-box">
-            <h2>Admin Login</h2>
-            <p>Enter Access Key to manage database</p>
-            <input type="password" id="adminPassKey" placeholder="Enter Access Code">
-            <button onclick="checkAdminAuth()" class="btn-primary">Unlock Panel</button>
+    <!-- Auth Modal -->
+    <div id="adminAuthModal" class="admin-login-overlay">
+        <div class="login-box" id="loginBox">
+            <div class="lock-icon"><i class="fa-solid fa-user-shield"></i></div>
+            <h2>Admin Portal Access</h2>
+            <p>Login with your credentials</p>
+            <form onsubmit="handleEmailLogin(event)">
+                <input type="email" id="adminEmail" placeholder="Enter Admin Email" required>
+                <input type="password" id="adminPassword" placeholder="Enter Password" required>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard</button>
+            </form>
+            <div class="auth-links">
+                <a href="#" onclick="showForgotBox()">Forgot Password?</a>
+            </div>
+        </div>
+
+        <div class="login-box" id="forgotBox" style="display: none;">
+            <div class="lock-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+            <h2>Password Recovery</h2>
+            <p>A reset link will be sent to your email</p>
+            <form onsubmit="handleForgotPassword(event)">
+                <input type="email" id="resetEmail" placeholder="Enter Registered Email" required>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Recovery Link</button>
+            </form>
+            <div class="auth-links">
+                <a href="#" onclick="showLoginBox()">Back to Login</a>
+            </div>
         </div>
     </div>
 
+    <!-- Admin Dashboard -->
     <div id="adminDashboard" class="admin-wrapper" style="display: none;">
         <header class="admin-header">
-            <h2><i class="fa-solid fa-sliders"></i> Admin Control Panel</h2>
-            <a href="index.html" class="btn-logout"><i class="fa-solid fa-globe"></i> View Website</a>
+            <div class="admin-brand">
+                <i class="fa-solid fa-building-circle-check"></i>
+                <div>
+                    <h2>Mahrim Properties</h2>
+                    <span style="font-size: 0.8rem; opacity: 0.8;" id="loggedInUserText">Owner Control Panel</span>
+                </div>
+            </div>
+            <div class="admin-actions">
+                <a href="index.html" class="btn-secondary" target="_blank"><i class="fa-solid fa-globe"></i> View Website</a>
+                <button onclick="handleLogout()" class="btn-danger"><i class="fa-solid fa-power-off"></i> Logout</button>
+            </div>
         </header>
 
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e9e3ff; color: #4318ff;"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div><h3 id="statTotal">0</h3><p>Total Listings</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e6f9f0; color: #05cd99;"><i class="fa-solid fa-key"></i></div>
+                <div><h3 id="statRent">0</h3><p>Flats For Rent</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fff6e5; color: #ffb800;"><i class="fa-solid fa-house-circle-check"></i></div>
+                <div><h3 id="statSell">0</h3><p>Flats For Sale</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #ffe5e5; color: #ff5b5b;"><i class="fa-solid fa-hotel"></i></div>
+                <div><h3 id="statHotel">0</h3><p>Hotel Rooms</p></div>
+            </div>
+        </div>
+
         <div class="admin-grid">
+            <!-- Add Property -->
             <div class="admin-card">
-                <h3>Add New Property</h3>
+                <h3><i class="fa-solid fa-circle-plus"></i> Add New Property</h3>
                 <form id="addPropertyForm" onsubmit="addProperty(event)">
-                    <div class="form-group">
-                        <label>Property Title</label>
-                        <input type="text" id="pTitle" placeholder="e.g. Luxury 3BHK Flat in Gulshan" required>
-                    </div>
+                    <div class="form-group"><label>Property Title</label><input type="text" id="pTitle" placeholder="e.g. Luxury 3BHK Apartment" required></div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Category</label>
@@ -43,37 +91,51 @@
                                 <option value="hotel">Hotel Room</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Price (BDT)</label>
-                            <input type="number" id="pPrice" placeholder="50000" required>
-                        </div>
+                        <div class="form-group"><label>Price (BDT)</label><input type="number" id="pPrice" placeholder="50000" required></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Location</label>
-                            <input type="text" id="pLocation" placeholder="Gulshan-2, Dhaka" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Bedrooms / Type</label>
-                            <input type="text" id="pBed" placeholder="3 Beds / Deluxe Suite">
-                        </div>
+                        <div class="form-group"><label>Location</label><input type="text" id="pLocation" placeholder="Gulshan-2, Dhaka" required></div>
+                        <div class="form-group"><label>Bedrooms / Type</label><input type="text" id="pBed" placeholder="3 Beds"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Image Direct Link (URL)</label>
-                        <input type="url" id="pImg" placeholder="https://images.unsplash.com/..." required>
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Publish Property</button>
+                    <div class="form-group"><label>Image Direct Link (URL)</label><input type="url" id="pImg" placeholder="https://..." required></div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing</button>
                 </form>
             </div>
 
+            <!-- Business Handover Settings -->
             <div class="admin-card">
-                <h3>Active Properties</h3>
-                <div id="adminPropertyList" class="manage-list"></div>
+                <h3><i class="fa-solid fa-sliders"></i> Complete Business Setup</h3>
+                <form onsubmit="saveSiteSettings(event)">
+                    <div class="form-group">
+                        <label>Business Phone Number (Public)</label>
+                        <input type="text" id="settingPhone" placeholder="+880 1700-000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Email Address</label>
+                        <input type="email" id="settingEmail" placeholder="contact@mahrimproperties.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Office Address</label>
+                        <input type="text" id="settingAddress" placeholder="Gulshan Avenue, Dhaka" required>
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp Number (For Direct Booking)</label>
+                        <input type="text" id="settingWhatsapp" placeholder="+880 1700-000000">
+                    </div>
+                    <button type="submit" class="btn-secondary-btn"><i class="fa-solid fa-floppy-disk"></i> Update Business Information</button>
+                </form>
             </div>
+        </div>
+
+        <!-- Management Table -->
+        <div class="admin-card full-width">
+            <h3><i class="fa-solid fa-list-check"></i> Manage Active Properties</h3>
+            <div id="adminPropertyList" class="manage-table-container"></div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="app.js"></script>
 </body>
