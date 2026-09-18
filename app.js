@@ -12,25 +12,62 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
+
 const db = firebase.database();
+const auth = firebase.auth();
 let allProperties = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchProperties();
     loadSiteSettings();
+
+    if (document.getElementById('adminAuthModal')) {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('adminAuthModal').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                if(document.getElementById('loggedInUserText')){
+                    document.getElementById('loggedInUserText').innerText = "Logged in: " + user.email;
+                }
+            } else {
+                document.getElementById('adminDashboard').style.display = 'none';
+                document.getElementById('adminAuthModal').style.display = 'flex';
+            }
+        });
+    }
 });
 
-// Passkey Authorization Systems
-function checkAdminAuth() {
-    const inputPass = document.getElementById('adminPassKey').value;
-    db.ref('adminSecurity/passkey').once('value', (snapshot) => {
-        const currentPass = snapshot.val() || "admin123";
-        if (inputPass === currentPass) {
-            document.getElementById('adminAuthModal').style.display = 'none';
-            document.getElementById('adminDashboard').style.display = 'block';
-        } else {
-            alert("Incorrect Passkey! Please try again.");
-        }
+function handleEmailLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('adminEmail').value;
+    const pass = document.getElementById('adminPassword').value;
+
+    auth.signInWithEmailAndPassword(email, pass)
+        .then(() => {
+            alert("Login Successful!");
+        })
+        .catch((error) => {
+            alert("Login Failed: " + error.message);
+        });
+}
+
+function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('resetEmail').value;
+
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            alert("Password Reset Link sent to your Email! Please check inbox/spam folder.");
+            showLoginBox();
+        })
+        .catch((error) => {
+            alert("Error: " + error.message);
+        });
+}
+
+function handleLogout() {
+    auth.signOut().then(() => {
+        alert("Logged Out Successfully.");
     });
 }
 
@@ -44,50 +81,6 @@ function showLoginBox() {
     document.getElementById('loginBox').style.display = 'block';
 }
 
-function resetPasskey() {
-    const ans = document.getElementById('securityAnswer').value.toLowerCase().trim();
-    const newPass = document.getElementById('newPassKey').value;
-
-    db.ref('adminSecurity/securityAnswer').once('value', (snapshot) => {
-        const correctAns = (snapshot.val() || "dhaka").toLowerCase();
-        if (ans === correctAns) {
-            if (!newPass) return alert("Please enter a new passkey");
-            db.ref('adminSecurity/passkey').set(newPass).then(() => {
-                alert("Passkey Reset Successful! Login with your new passkey.");
-                showLoginBox();
-            });
-        } else {
-            alert("Wrong Security Answer!");
-        }
-    });
-}
-
-function updatePasskey(e) {
-    e.preventDefault();
-    const curr = document.getElementById('currentPass').value;
-    const next = document.getElementById('changePass').value;
-
-    db.ref('adminSecurity/passkey').once('value', (snapshot) => {
-        const realPass = snapshot.val() || "admin123";
-        if (curr === realPass) {
-            db.ref('adminSecurity/passkey').set(next).then(() => {
-                alert("Security Passkey Updated Successfully!");
-                document.getElementById('currentPass').value = '';
-                document.getElementById('changePass').value = '';
-            });
-        } else {
-            alert("Current Passkey is Incorrect!");
-        }
-    });
-}
-
-function lockAdmin() {
-    document.getElementById('adminDashboard').style.display = 'none';
-    document.getElementById('adminAuthModal').style.display = 'flex';
-    document.getElementById('adminPassKey').value = '';
-}
-
-// Fetch and Render Properties & Stats
 function fetchProperties() {
     db.ref('properties').on('value', (snapshot) => {
         allProperties = [];
@@ -112,6 +105,7 @@ function updateDashboardStats(props) {
 
 function renderAdminListings(properties) {
     const container = document.getElementById('adminPropertyList');
+    if (!container) return;
     if (properties.length === 0) {
         container.innerHTML = '<p style="padding: 20px; text-align:center;">No active listings found.</p>';
         return;
@@ -176,31 +170,33 @@ function deleteProperty(id) {
     }
 }
 
-// Global Site Settings Handling
 function saveSiteSettings(e) {
     e.preventDefault();
     const settings = {
         phone: document.getElementById('settingPhone').value,
         email: document.getElementById('settingEmail').value,
-        address: document.getElementById('settingAddress').value
+        address: document.getElementById('settingAddress').value,
+        whatsapp: document.getElementById('settingWhatsapp').value
     };
     db.ref('siteSettings').set(settings).then(() => {
-        alert('Website Settings & Contact Info Updated!');
+        alert('Business Settings & Contact Details Successfully Updated!');
     });
 }
 
 function loadSiteSettings() {
-    db.ref('siteSettings').once('value', (snapshot) => {
+    db.ref('siteSettings').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data && document.getElementById('settingPhone')) {
-            document.getElementById('settingPhone').value = data.phone || '';
-            document.getElementById('settingEmail').value = data.email || '';
-            document.getElementById('settingAddress').value = data.address || '';
+        if (data) {
+            if (document.getElementById('settingPhone')) {
+                document.getElementById('settingPhone').value = data.phone || '';
+                document.getElementById('settingEmail').value = data.email || '';
+                document.getElementById('settingAddress').value = data.address || '';
+                document.getElementById('settingWhatsapp').value = data.whatsapp || '';
+            }
         }
     });
 }
 
-// Public UI Rendering
 function renderListings(properties) {
     const listContainer = document.getElementById('propertyList');
     if (!listContainer) return;
@@ -257,6 +253,6 @@ function closeModal() {
 
 function handleBooking(e) {
     e.preventDefault();
-    alert('Thank you! Your inquiry has been sent to Mahrim Properties.');
+    alert('Thank you! Your inquiry has been sent.');
     closeModal();
 }
