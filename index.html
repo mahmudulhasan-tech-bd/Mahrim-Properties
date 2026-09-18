@@ -3,82 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mahrim Properties | Premium Real Estate & Booking</title>
+    <title>Enterprise Admin Dashboard | Mahrim Properties</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <header class="header">
-        <nav class="navbar">
-            <a href="#" class="logo">
-                <i class="fa-solid fa-building-circle-check"></i> MAHRIM <span>PROPERTIES</span>
-            </a>
-            <ul class="nav-menu">
-                <li><a href="#home" class="nav-link active">Home</a></li>
-                <li><a href="#listings" class="nav-link">Properties</a></li>
-                <li><a href="#services" class="nav-link">Services</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+<body class="admin-body">
 
-    <section id="home" class="hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1>Find Your Dream Space With Confidence</h1>
-            <p>Explore luxury apartments, commercial spaces & premium hotel bookings in top locations.</p>
-            
-            <div class="search-filter-card">
-                <div class="filter-item">
-                    <label><i class="fa-solid fa-list"></i> Type</label>
-                    <select id="filterCategory">
-                        <option value="all">All Categories</option>
-                        <option value="rent">Flat For Rent</option>
-                        <option value="sell">Flat For Sell</option>
-                        <option value="hotel">Hotel Room</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label><i class="fa-solid fa-location-dot"></i> Location</label>
-                    <input type="text" id="filterLocation" placeholder="e.g. Gulshan, Banani">
-                </div>
-                <div class="filter-item">
-                    <label><i class="fa-solid fa-bangladeshi-taka-sign"></i> Max Budget</label>
-                    <input type="number" id="filterPrice" placeholder="Max Price in BDT">
-                </div>
-                <button onclick="filterProperties()" class="btn-search">
-                    <i class="fa-solid fa-magnifying-glass"></i> Search
-                </button>
+    <!-- Security Overlay Modal (Login / Recovery) -->
+    <div id="adminAuthModal" class="admin-login-overlay">
+        <div class="login-box" id="loginBox">
+            <div class="lock-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2>Admin Portal Access</h2>
+            <p>Enter passkey to manage platform</p>
+            <input type="password" id="adminPassKey" placeholder="Enter Passkey (Default: admin123)">
+            <button onclick="checkAdminAuth()" class="btn-primary"><i class="fa-solid fa-key"></i> Unlock Dashboard</button>
+            <div class="auth-links">
+                <a href="#" onclick="showForgotBox()">Forgot Passkey?</a>
             </div>
         </div>
-    </section>
 
-    <section id="listings" class="main-container">
-        <div class="section-header">
-            <h2>Featured Properties</h2>
-            <p>Discover our handpicked selections for your luxury lifestyle</p>
-        </div>
-        <div id="propertyList" class="properties-grid"></div>
-    </section>
-
-    <!-- Booking Modal -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Inquire Property</h3>
-            <form id="bookingForm" onsubmit="handleBooking(event)">
-                <input type="text" placeholder="Your Name" required>
-                <input type="tel" placeholder="Phone Number" required>
-                <textarea placeholder="Your Message or Booking Dates" rows="3"></textarea>
-                <button type="submit" class="btn-submit">Submit Inquiry</button>
-            </form>
+        <div class="login-box" id="forgotBox" style="display: none;">
+            <div class="lock-icon"><i class="fa-solid fa-lock-open"></i></div>
+            <h2>Reset Passkey</h2>
+            <p>Answer your security question</p>
+            <p style="font-size: 0.85rem; color: #4318ff; margin-bottom: 10px;"><strong>Security Q:</strong> What is your favorite city?</p>
+            <input type="text" id="securityAnswer" placeholder="Enter Answer (Default: dhaka)">
+            <input type="password" id="newPassKey" placeholder="Enter New Passkey">
+            <button onclick="resetPasskey()" class="btn-primary"><i class="fa-solid fa-arrows-rotate"></i> Reset Passkey</button>
+            <div class="auth-links">
+                <a href="#" onclick="showLoginBox()">Back to Login</a>
+            </div>
         </div>
     </div>
 
-    <footer class="footer">
-        <p>&copy; 2026 Mahrim Properties. All rights reserved.</p>
-    </footer>
+    <!-- Admin Dashboard Main Layout -->
+    <div id="adminDashboard" class="admin-wrapper" style="display: none;">
+        <header class="admin-header">
+            <div class="admin-brand">
+                <i class="fa-solid fa-building-circle-check"></i>
+                <div>
+                    <h2>Mahrim Properties</h2>
+                    <span style="font-size: 0.8rem; opacity: 0.8;">Enterprise Management Console</span>
+                </div>
+            </div>
+            <div class="admin-actions">
+                <a href="index.html" class="btn-secondary" target="_blank"><i class="fa-solid fa-globe"></i> Live Website</a>
+                <button onclick="lockAdmin()" class="btn-danger"><i class="fa-solid fa-lock"></i> Lock Dashboard</button>
+            </div>
+        </header>
+
+        <!-- Dynamic Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e9e3ff; color: #4318ff;"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div>
+                    <h3 id="statTotal">0</h3>
+                    <p>Total Listings</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e6f9f0; color: #05cd99;"><i class="fa-solid fa-key"></i></div>
+                <div>
+                    <h3 id="statRent">0</h3>
+                    <p>Flats For Rent</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fff6e5; color: #ffb800;"><i class="fa-solid fa-house-circle-check"></i></div>
+                <div>
+                    <h3 id="statSell">0</h3>
+                    <p>Flats For Sale</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #ffe5e5; color: #ff5b5b;"><i class="fa-solid fa-hotel"></i></div>
+                <div>
+                    <h3 id="statHotel">0</h3>
+                    <p>Hotel Rooms</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Add Property Form -->
+            <div class="admin-card">
+                <h3><i class="fa-solid fa-circle-plus"></i> Add New Property</h3>
+                <form id="addPropertyForm" onsubmit="addProperty(event)">
+                    <div class="form-group">
+                        <label>Property Title</label>
+                        <input type="text" id="pTitle" placeholder="e.g. 3BHK Luxury Apartment in Banani" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="pCategory" required>
+                                <option value="rent">Flat Rent</option>
+                                <option value="sell">Flat Sell</option>
+                                <option value="hotel">Hotel Room</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (BDT)</label>
+                            <input type="number" id="pPrice" placeholder="65000" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="pLocation" placeholder="Banani Block C, Dhaka" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Bedrooms / Suite Type</label>
+                            <input type="text" id="pBed" placeholder="3 Beds / Executive Suite">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Image Direct Link (URL)</label>
+                        <input type="url" id="pImg" placeholder="https://images.unsplash.com/photo-..." required>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing</button>
+                </form>
+            </div>
+
+            <!-- Settings & Manage -->
+            <div class="admin-card-stack">
+                <!-- Site Settings Form -->
+                <div class="admin-card">
+                    <h3><i class="fa-solid fa-gears"></i> Website Contact & Security Settings</h3>
+                    <form onsubmit="saveSiteSettings(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Official Phone Number</label>
+                                <input type="text" id="settingPhone" placeholder="+880 1700-000000">
+                            </div>
+                            <div class="form-group">
+                                <label>Official Email Address</label>
+                                <input type="email" id="settingEmail" placeholder="info@mahrimproperties.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Office Address</label>
+                            <input type="text" id="settingAddress" placeholder="Gulshan-2, Dhaka, Bangladesh">
+                        </div>
+                        <button type="submit" class="btn-secondary-btn"><i class="fa-solid fa-floppy-disk"></i> Update Public Info</button>
+                    </form>
+                </div>
+
+                <!-- Passkey Change -->
+                <div class="admin-card">
+                    <h3><i class="fa-solid fa-key"></i> Security Settings</h3>
+                    <form onsubmit="updatePasskey(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Current Passkey</label>
+                                <input type="password" id="currentPass" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Passkey</label>
+                                <input type="password" id="changePass" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-warning"><i class="fa-solid fa-lock-rotate"></i> Change Security Passkey</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Property List Management Table -->
+        <div class="admin-card full-width">
+            <h3><i class="fa-solid fa-list-check"></i> Manage Active Properties</h3>
+            <div id="adminPropertyList" class="manage-table-container"></div>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
